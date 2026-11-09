@@ -98,6 +98,19 @@ Se `scaling_cur_freq` oscilar durante o jogo, o `perfmax`/`perfnorm` ainda está
 
 Medido com `/proc/<pid>/stat`: **cerca de 27% de um núcleo parado no menu** (~82 ticks a cada 3 s), com 99 MB residentes. O tema não muda isso: o tema padrão deu 80 ticks e o tema Lain 82.
 
-Ou seja, o menu custa cerca de um quarto de um núcleo enquanto está aberto. Como o ArkOS mantém o EmulationStation vivo durante o jogo, esse custo divide CPU com o emulador. É o candidato mais óbvio a substituição por algo mais leve — mas não há front-end em Rust pronto que aceite temas e gamelists deste ES, e reescrever significa perder compatibilidade com tudo que já existe.
+Ou seja, o menu custa cerca de um quarto de um núcleo enquanto está aberto. **Durante o jogo, não custa nada:** o binário chama o emulador por `system()`, que bloqueia em `waitpid()` até o jogo terminar. Medição no menu: 571 ticks em 20 s (28,5% de um núcleo); com o jogo aberto, essa thread fica bloqueada.
+
+Isso derruba a ideia de que o menu "rouba" CPU do emulador. Também derruba a ideia de reescrever o EmulationStation em Rust para ganhar FPS: o custo dele não está no caminho do jogo.
 
 Conclusão honesta: o ganho de desempenho em jogos vem de governador, GPU no máximo, frameskip e menos serviços. Reescrever componentes em Rust não muda o teto dos emuladores neste hardware.
+
+## Reescrita em Rust: o que a investigação mostrou
+
+Um estudo separado (benchmarks em Rust, bash e Python, mais análise do binário) concluiu que **não há ganho de FPS** em reescrever componentes deste sistema em Rust:
+
+- O gargalo é CPU/GPU do RK3326, e um quadro a 60 fps dura 16,7 ms. Nenhuma das economias medidas é por quadro: são por lançamento de jogo, a cada 30 s ou a cada 5 min.
+- O EmulationStation fica **bloqueado** durante o jogo, então não disputa CPU.
+- `btop` já é Rust. Os daemons do ArkOS dormem em `poll` e não estão no caminho do quadro.
+- O único ruído periódico é o backup automático a cada 5 minutos, que mexe no cartão — e a solução é agendamento, não reescrita.
+
+Resultado negativo, mas com prova: os números não sustentam a troca. Se um dia aparecer um front-end em Rust que aceite os temas e gamelists deste EmulationStation, a conversa muda.
