@@ -139,14 +139,14 @@ backup_file() {
 # interface do DraStic (Load state -> 9) sem mexer em arquivos.
 espelhar_slot9() {
   local jogo=$1 dir_ss="$ROMS/nds/savestates" origem destino ultimo
-  [ -d "$DEST/$jogo"'_0.dss' ] || return 0
-  ultimo=$(versions "$DEST/${jogo}_0.dss" | tail -n 1)
-  [ -n "$ultimo" ] || return 0
-  origem="$DEST/${jogo}_0.dss/$ultimo"
+  # pega o backup mais recente entre todos os slots (0 = manual, 1 = ativo)
+  origem=$(ls -1t "$DEST/${jogo}"_*.dss/*.dss 2>/dev/null | head -n 1)
+  [ -n "$origem" ] || return 0
+  ultimo=${origem##*/}
   destino="$dir_ss/${jogo}_9.dss"
   cmp -s "$origem" "$destino" && return 0
   cp -f "$origem" "$destino.tmp" && sync -- "$destino.tmp" && mv -f "$destino.tmp" "$destino" || return 1
-  log "SLOT 9 atualizado com $ultimo"
+  log "SLOT 9 atualizado com ${origem#"$DEST"/}"
 }
 
 # Sem a pasta, a particao pode estar desmontada. Nada e apagado nesse caso.

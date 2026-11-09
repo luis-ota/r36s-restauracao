@@ -122,3 +122,11 @@ O autosave espelha o último savestate bom no **slot 9**. Assim, para recuperar,
 - O slot 9 é reservado para isso: não use para savestate manual.
 - Atualiza a cada 2 minutos (só quando o state muda) e ao fechar o jogo.
 - Continua existindo o histórico numerado em `/home/ark/pokemon-backups`, com o atalho **Ports → Restaurar backup do Pokemon** para versões mais antigas.
+
+### Slots do DraStic neste aparelho
+
+- **Slot 1** — slot ativo (L1 carrega, R1 salva). O launcher grava `savestate_number = 1` no `drastic.cfg` antes de abrir o jogo, porque o DraStic regrava a configuração ao sair.
+- **Slot 0** — reservado para save manual antes de algo arriscado.
+- **Slot 9** — espelho automático do backup mais recente, para recuperar pelo menu (Load state → 9).
+
+O autosave escolhe o backup mais novo entre todos os slots e copia para o 9, então funciona venha o save do slot 0 ou do 1.
