@@ -16,6 +16,7 @@ GAMES=("Pokemon - Black Version")
 DEST="${DEST_DIR:-/home/ark/pokemon-backups}"
 MIN_AGE="${MIN_AGE:-15}"              # segundos sem mudar antes de copiar
 MIN_FREE_MB="${MIN_FREE_MB:-100}"     # nao ocupa o resto do disco do sistema
+MIN_DSV_KB="${MIN_DSV_KB:-64}"        # .dsv menor que isso e save vazio do DraStic
 
 # Quantas versoes manter: recentes, mais "marcos" (uma a cada 10) para ter
 # algo antigo se o estrago so for percebido bem depois.
@@ -90,6 +91,11 @@ backup_file() {
   age=$(($(date +%s) - $(stat -c %Y "$src")))
   # Idade negativa significa relogio ajustado depois da gravacao: pode copiar.
   if ((age >= 0 && age < MIN_AGE)); then
+    return 0
+  fi
+
+  if [ "$ext" = "dsv" ] && [ "$(stat -c %s "$src")" -lt $((MIN_DSV_KB * 1024)) ]; then
+    log "IGNORADO, .dsv pequeno demais (save vazio): $base"
     return 0
   fi
 
