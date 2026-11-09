@@ -114,3 +114,11 @@ Um estudo separado (benchmarks em Rust, bash e Python, mais análise do binário
 - O único ruído periódico é o backup automático a cada 5 minutos, que mexe no cartão — e a solução é agendamento, não reescrita.
 
 Resultado negativo, mas com prova: os números não sustentam a troca. Se um dia aparecer um front-end em Rust que aceite os temas e gamelists deste EmulationStation, a conversa muda.
+
+## Autosave e o slot 9 do DraStic
+
+O autosave espelha o último savestate bom no **slot 9**. Assim, para recuperar, basta abrir o menu do DraStic e escolher **Load state → slot 9**, sem mexer em arquivos.
+
+- O slot 9 é reservado para isso: não use para savestate manual.
+- Atualiza a cada 2 minutos (só quando o state muda) e ao fechar o jogo.
+- Continua existindo o histórico numerado em `/home/ark/pokemon-backups`, com o atalho **Ports → Restaurar backup do Pokemon** para versões mais antigas.

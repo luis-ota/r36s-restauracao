@@ -135,6 +135,20 @@ backup_file() {
   prune "$dir" "$recent" "$marks"
 }
 
+# Espelha o ultimo state bom do slot principal no slot 9, para carregar pela
+# interface do DraStic (Load state -> 9) sem mexer em arquivos.
+espelhar_slot9() {
+  local jogo=$1 dir_ss="$ROMS/nds/savestates" origem destino ultimo
+  [ -d "$DEST/$jogo"'_0.dss' ] || return 0
+  ultimo=$(versions "$DEST/${jogo}_0.dss" | tail -n 1)
+  [ -n "$ultimo" ] || return 0
+  origem="$DEST/${jogo}_0.dss/$ultimo"
+  destino="$dir_ss/${jogo}_9.dss"
+  cmp -s "$origem" "$destino" && return 0
+  cp -f "$origem" "$destino.tmp" && sync -- "$destino.tmp" && mv -f "$destino.tmp" "$destino" || return 1
+  log "SLOT 9 atualizado com $ultimo"
+}
+
 # Sem a pasta, a particao pode estar desmontada. Nada e apagado nesse caso.
 [ -d "$ROMS/nds/backup" ] || exit 0
 
@@ -143,8 +157,10 @@ for game in "${GAMES[@]}"; do
   backup_file "$ROMS/nds/backup/$game.dsv" "$KEEP_DSV" "$MARKS_DSV" || status=1
 
   for state in "$ROMS/nds/savestates/$game"_*.dss; do
+    [ "${state##*_}" = "9.dss" ] && continue
     backup_file "$state" "$KEEP_DSS" "$MARKS_DSS" || status=1
   done
+  espelhar_slot9 "$game" || status=1
 done
 
 exit "$status"
