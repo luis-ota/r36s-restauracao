@@ -1,0 +1,8 @@
+#!/bin/bash
+printf "\033c" >> /dev/tty1
+if [ -f "/roms/launchimages/loading.jpg" ]; then
+  image-viewer /roms/launchimages/loading.jpg &
+  PROC=$!
+  (sleep 1.5s; kill -9 $PROC)
+fi
+/usr/local/bin/r36s-perf.sh

@@ -1,0 +1,4 @@
+#!/bin/bash
+printf "\033c" >> /dev/tty1
+cp /home/ark/.asoundrcbak /home/ark/.asoundrc 2>/dev/null || true
+/usr/local/bin/r36s-perf.sh
