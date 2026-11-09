@@ -77,6 +77,14 @@ def entradas():
     return fds
 
 
+CONSOLE_LOCK = "/tmp/r36s-console.lock"
+
+
+def app_de_console():
+    """Launcher de console (opencode, btop, PortMaster) avisa por arquivo."""
+    return os.path.exists(CONSOLE_LOCK)
+
+
 def jogo_rodando():
     for pid in glob.glob("/proc/[0-9]*"):
         try:
@@ -91,6 +99,16 @@ def jogo_rodando():
 
 def imagens():
     return sorted(glob.glob(IMAGES + "/*.jpg"))
+
+
+def es_ativo():
+    r = subprocess.run(["systemctl", "is-active", "emulationstation"],
+                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    return r.stdout.strip() == b"active"
+
+
+def matar_viewer():
+    subprocess.run(["pkill", "-x", "image-viewer"], check=False)
 
 
 def parar_es():
@@ -116,6 +134,8 @@ def slideshow(baixo):
     """Mostra as imagens ate alguem mexer. Devolve True se houve entrada."""
     lista = imagens()
     if not lista:
+        return False
+    if es_ativo():
         return False
     write_bright(baixo)  # parar o ES devolve o brilho ao maximo
     limite = time.monotonic() + MAX_SLIDE_MIN * 60
@@ -144,7 +164,7 @@ def slideshow(baixo):
         fim = time.monotonic() + SLIDE_SECONDS_EACH
         while time.monotonic() < fim:
             r, _, _ = select.select(list(fds.values()), [], [], 0.2)
-            if jogo_rodando():
+            if jogo_rodando() or es_ativo():
                 proc.terminate()
                 return False
             if r and time.monotonic() >= graca:
@@ -231,6 +251,7 @@ def tocar():
     log(f"toque: shown={shown} dimmed={dimmed} normal={normal}")
     if shown:
         shown = False
+        matar_viewer()
         subir_es()
     if dimmed:
         write_bright(normal)
@@ -258,11 +279,12 @@ while True:
             tocar()
     else:
         parado = time.monotonic() - last
-        if not jogo_rodando():
+        if not jogo_rodando() and not app_de_console():
             if not dimmed and parado >= DIM_SECONDS:
                 write_bright(baixo)
                 dimmed = True
-            if not shown and parado >= SLIDE_SECONDS and not jogo_rodando():
+            if (not shown and parado >= SLIDE_SECONDS and not jogo_rodando()
+                    and not app_de_console() and not es_ativo()):
                 parar_es()
                 dimmed = True
                 shown = True

@@ -28,6 +28,8 @@ KEEP_DSS=5;  MARKS_DSS=3
 
 if [ -n "${ROMS_DIR:-}" ]; then
   ROMS="$ROMS_DIR"
+elif mountpoint -q /mnt/jogos; then
+  ROMS=/mnt/jogos
 elif mountpoint -q /roms2; then
   ROMS=/roms2
 else
