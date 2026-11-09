@@ -52,7 +52,7 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 25. **Guarde uma imagem boa com checksum.** Foi ela que trouxe o sistema de volta em minutos, em vez de refazer tudo. O que você alterou depois da imagem se perde, então leve scripts e temas para fora do cartão.
 26. **Um cartão pode passar no PC e falhar no aparelho.** Um cartão aprovado no leitor USB apareceu na segunda porta com o tamanho errado e erros de I/O. Teste também no slot onde ele vai ficar.
 27. **Tema em `/roms/themes` morre junto com a partição de ROMs.** Em `/etc/emulationstation/themes` há um symlink para lá.
-28. **O atalho do PortMaster em `/roms/ports` sumiu** depois da instalação de um port. A causa não foi confirmada. Deixe um segundo atalho em `/opt/system`.
+28. **Um atalho chamado `PortMaster.sh` em `/roms/ports` some quando o PortMaster abre.** Com o nome `AbrirPortMaster.sh`, ele fica. Não localizei a linha exata que apaga o arquivo.
 
 ## O que ainda não sabemos
 

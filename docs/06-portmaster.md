@@ -122,7 +122,7 @@ printf "\033c" > /dev/tty1
 systemctl start emulationstation
 ```
 
-`/roms/ports/PortMaster.sh`:
+`/roms/ports/AbrirPortMaster.sh` (com o nome `PortMaster.sh`, o arquivo some da pasta na primeira abertura):
 
 ```bash
 #!/bin/bash
