@@ -86,3 +86,18 @@ cat /sys/class/thermal/thermal_zone0/temp
 ```
 
 Se `scaling_cur_freq` oscilar durante o jogo, o `perfmax`/`perfnorm` ainda está derrubando o perfil — volte ao item 1.
+
+## Ajustes aplicados depois (medidos no aparelho)
+
+- `vm.swappiness=10`, `vm.dirty_writeback_centisecs=3000` e `dirty_ratio=15` em `/etc/sysctl.d/99-r36s.conf`: menos gravação no cartão, menos travadas e menos desgaste.
+- `ModemManager` e `cups` desligados: nenhum uso neste aparelho.
+- RetroArch: `menu_driver=rgui` (mais leve que o ozone), `audio_resampler_quality=0`, shaders e rewind desligados.
+- Governadores no máximo no boot via `r36s-perf.service`.
+
+## O que o EmulationStation custa
+
+Medido com `/proc/<pid>/stat`: **cerca de 27% de um núcleo parado no menu** (~82 ticks a cada 3 s), com 99 MB residentes. O tema não muda isso: o tema padrão deu 80 ticks e o tema Lain 82.
+
+Ou seja, o menu custa cerca de um quarto de um núcleo enquanto está aberto. Como o ArkOS mantém o EmulationStation vivo durante o jogo, esse custo divide CPU com o emulador. É o candidato mais óbvio a substituição por algo mais leve — mas não há front-end em Rust pronto que aceite temas e gamelists deste ES, e reescrever significa perder compatibilidade com tudo que já existe.
+
+Conclusão honesta: o ganho de desempenho em jogos vem de governador, GPU no máximo, frameskip e menos serviços. Reescrever componentes em Rust não muda o teto dos emuladores neste hardware.

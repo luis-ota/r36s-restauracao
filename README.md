@@ -21,6 +21,7 @@ Tudo aqui foi testado no aparelho. O que não foi medido está marcado como **n�
 | [09 — Cartão TF2](docs/09-cartao-tf2.md) | Preparar o segundo cartão e o que o script do ArkOS realmente faz |
 | [10 — Tema Lain](docs/10-tema-lain.md) | Estrutura do tema e como instalar |
 | [11 — Lições aprendidas](docs/11-licoes-aprendidas.md) | Lista curta do que economiza horas |
+| [12 — Descanso e bateria](docs/12-descanso-e-bateria.md) | Screensaver, slideshow e escurecimento real do painel |
 
 ## Scripts
 
@@ -33,6 +34,7 @@ Em [`scripts/`](scripts/):
 - `portmaster-launcher.sh` — atalho do menu Ports para o PortMaster.
 - `perfmax` / `perfnorm` — versões que não derrubam o governor.
 - `uinput-f12.py` — experimento de teclado virtual via `uinput`.
+- `r36s-idle.py` — escurece a luz de fundo por inatividade e devolve ao toque.
 
 ## Contexto do aparelho
 
