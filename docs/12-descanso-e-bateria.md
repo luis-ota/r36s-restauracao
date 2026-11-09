@@ -1,69 +1,68 @@
 # 12 — Descanso de tela e economia de bateria
 
-Dois assuntos que o mesmo problema juntou: o screensaver que abria sozinho e a vontade de escurecer a tela para gastar menos.
+O descanso do EmulationStation, nesta versão, tem dois problemas: volta menos de 2 segundos depois de você sair e não baixa o brilho do painel (só cobre a tela com preto). Por isso o descanso aqui **não usa o do EmulationStation**.
 
-## O tempo do descanso é em segundos
+## Como funciona agora
 
-No EmulationStation do ArkOS, `ScreenSaverTime` é lido em **segundos**, e o comportamento vem de `ScreenSaverBehavior`.
+Um daemon próprio ([`scripts/r36s-idle.py`](../scripts/r36s-idle.py)) cuida de tudo:
 
-Valores que funcionam:
+| Tempo parado | O que acontece |
+|---|---|
+| 60 s | brilho do painel cai para 45% — economia real de bateria |
+| 90 s | EmulationStation para e as imagens do slideshow começam, trocando a cada 8 s |
+| qualquer toque | fecha as imagens, restaura o brilho e sobe o EmulationStation de volta |
 
-```xml
-<int name="ScreenSaverTime" value="90" />
-<string name="ScreenSaverBehavior" value="slideshow" />
+Com um jogo rodando, ele não age: nem escurece, nem abre imagens.
+
+## Por que parar o EmulationStation
+
+O `image-viewer` só consegue desenhar na tela quando o EmulationStation solta o display. Parar o serviço é o jeito confiável; não há API para pedir isso ao menu.
+
+O custo é que a volta leva alguns segundos, porque o menu é reiniciado. Em troca, as imagens aparecem de verdade e o botão funciona.
+
+## O detalhe do toque
+
+Com o visualizador na frente, o EmulationStation (e nós) não recebem os eventos do controle: o `image-viewer` toma o dispositivo só para ele.
+
+A saída é ler a interface **legada** do joystick, `/dev/input/js*`, que continua funcionando mesmo com o `evdev` tomado. Foi medido no aparelho: o `js0` entrega eventos normalmente enquanto o `image-viewer` está na frente.
+
+Duas armadilhas resolvidas no caminho:
+
+- Abrir `/dev/input/js0` dispara um lote com o estado inicial (eixos e botões). Sem descartar esse lote, o slideshow fecharia sozinho no primeiro instante.
+- Controle conectado depois precisa ser descoberto: a lista de `js*` é reexaminada a cada 2 s durante o slideshow.
+
+## Configuração
+
+`/etc/systemd/system/r36s-idle.service`:
+
+```
+Environment=DIM_SECONDS=60
+Environment=SLIDE_SECONDS=90
+Environment=DIM_PERCENT=45
+Environment=SLIDE_SECONDS_EACH=8
 ```
 
-Com 90, o descanso entrou em ~95 s (o atraso é o tempo de subir o menu). Testado com print real da tela.
+O brilho normal fica gravado em `/etc/r36s-idle.normal`, para o serviço não confundir "brilho de uso" com "brilho escurecido" quando reinicia no meio do descanso.
 
-## Por que "10 minutos" virava 10 segundos
+Se as imagens não existirem, o daemon só escurece.
 
-O menu **regrava** `es_settings.cfg` ao sair. Se você edita o arquivo com o EmulationStation rodando, a alteração pode ser sobrescrita quando ele fecha, e o valor antigo volta — inclusive um valor curto usado em teste.
-
-Receita que não falha:
+## Desligar ou ajustar
 
 ```bash
-sudo systemctl stop emulationstation
-python3 settings.py ScreenSaverTime=90 ScreenSaverBehavior=slideshow
-sudo systemctl start emulationstation
-```
-
-Sempre pare o serviço antes de editar, e reinicie depois.
-
-## O brilho não caía
-
-O descanso do EmulationStation só cobre a tela com uma camada preta. O painel continua aceso no mesmo brilho, então **não economiza bateria**.
-
-Solução: um daemon pequeno que escuta os controles e baixa o brilho de verdade em `/sys/class/backlight/backlight/brightness` depois de um tempo parado, devolvendo ao primeiro toque.
-
-- Script: [`scripts/r36s-idle.py`](../scripts/r36s-idle.py)
-- Serviço: `r36s-idle.service`, com `IDLE_SECONDS=60` e `DIM_PERCENT=45`
-- Escuta todos os `/dev/input/event*` e reexamina a lista a cada 5 s, para pegar controle conectado depois
-- `ExecStopPost` devolve o brilho ao normal se o serviço parar
-
-Medido no aparelho: brilho 88 → 72 (45% de 160) após 70 s parado, e 88 de volta assim que chega um evento.
-
-## Ordem prática
-
-1. Aos 60 s parado, o brilho cai para 45% — economia real.
-2. Aos 90 s, o slideshow do EmulationStation começa, mostrando as imagens. Elas aparecem já com o brilho reduzido.
-3. Qualquer toque: o slideshow fecha e o brilho volta.
-
-Se quiser só a economia, sem imagens: `ScreenSaverBehavior=dim` ou `black`.
-Se quiser só as imagens: desative o `r36s-idle.service`.
-
-## Ajustes
-
-```bash
-# tempo e intensidade
-sudo systemctl edit r36s-idle
-#   Environment=IDLE_SECONDS=120
-#   Environment=DIM_PERCENT=30
-
 # desligar
 sudo systemctl disable --now r36s-idle
-echo 88 | sudo tee /sys/class/backlight/backlight/brightness
+cat /etc/r36s-idle.normal | sudo tee /sys/class/backlight/backlight/brightness
+
+# mudar tempos
+sudo systemctl edit r36s-idle
 ```
+
+## O screensaver do EmulationStation
+
+As chaves `ScreenSaverTime` e `ScreenSaverBehavior` ficam **fora** de `es_settings.cfg`. Com elas, o menu volta ao descanso imediatamente após o toque, e o valor de tempo é sobrescrito quando o serviço fecha.
+
+Se quiser usar o do sistema mesmo assim: pare o serviço antes de editar o arquivo, e saiba que o defeito de reentrada continua.
 
 ## Cuidado
 
-Brilho muito baixo em ambiente claro deixa a tela ilegível. 45% é o mínimo confortável testado aqui; abaixo disso só em ambiente escuro.
+Brilho em 45% é o mínimo confortável com luz ambiente. Abaixo disso, só no escuro. O daemon nunca escurece com jogo rodando.
