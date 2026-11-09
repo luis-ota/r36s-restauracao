@@ -111,11 +111,12 @@ def entradas_js():
     return fds
 
 
-def slideshow():
+def slideshow(baixo):
     """Mostra as imagens ate alguem mexer. Devolve True se houve entrada."""
     lista = imagens()
     if not lista:
         return False
+    write_bright(baixo)  # parar o ES devolve o brilho ao maximo
     limite = time.monotonic() + MAX_SLIDE_MIN * 60
     fds = entradas_js()
     if not fds:
@@ -137,6 +138,7 @@ def slideshow():
             stderr=subprocess.DEVNULL,
         )
         i += 1
+        write_bright(baixo)
         proximo_scan = time.monotonic() + 2.0
         fim = time.monotonic() + SLIDE_SECONDS_EACH
         while time.monotonic() < fim:
@@ -262,7 +264,7 @@ while True:
                 parar_es()
                 dimmed = True
                 shown = True
-                if not slideshow():
+                if not slideshow(baixo):
                     shown = False
                     subir_es()
                 else:
