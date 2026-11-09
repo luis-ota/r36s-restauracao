@@ -8,7 +8,7 @@ Um daemon próprio ([`scripts/r36s-idle.py`](../scripts/r36s-idle.py)) cuida de 
 
 | Tempo parado | O que acontece |
 |---|---|
-| 60 s | brilho do painel cai para 45% — economia real de bateria |
+| 45 s | brilho do painel cai para 18% (28 de 160) — economia agressiva |
 | 90 s | EmulationStation para e as imagens do slideshow começam, trocando a cada 8 s |
 | qualquer toque | fecha as imagens, restaura o brilho e sobe o EmulationStation de volta |
 
@@ -36,9 +36,9 @@ Duas armadilhas resolvidas no caminho:
 `/etc/systemd/system/r36s-idle.service`:
 
 ```
-Environment=DIM_SECONDS=60
+Environment=DIM_SECONDS=45
 Environment=SLIDE_SECONDS=90
-Environment=DIM_PERCENT=45
+Environment=DIM_PERCENT=18
 Environment=SLIDE_SECONDS_EACH=8
 ```
 
@@ -65,4 +65,4 @@ Se quiser usar o do sistema mesmo assim: pare o serviço antes de editar o arqui
 
 ## Cuidado
 
-Brilho em 45% é o mínimo confortável com luz ambiente. Abaixo disso, só no escuro. O daemon nunca escurece com jogo rodando.
+Brilho em 18% (28 de 160) é bem baixo: no escuro fica confortável, com luz do dia quase ilegível — mas qualquer toque devolve na hora. Para 10%, troque `DIM_PERCENT=10`. O daemon nunca escurece com jogo rodando.
