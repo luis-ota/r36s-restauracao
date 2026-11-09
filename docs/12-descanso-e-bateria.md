@@ -9,7 +9,7 @@ Um daemon próprio ([`scripts/r36s-idle.py`](../scripts/r36s-idle.py)) cuida de 
 | Tempo parado | O que acontece |
 |---|---|
 | 45 s | brilho do painel cai para 18% (28 de 160) — economia agressiva |
-| 90 s | EmulationStation para e as imagens do slideshow começam, trocando a cada 8 s |
+| 90 s | EmulationStation para e as imagens começam, trocando a cada 8 s, com brilho em 8% (12 de 160) |
 | qualquer toque | fecha as imagens, restaura o brilho e sobe o EmulationStation de volta |
 
 Com um jogo rodando, ele não age: nem escurece, nem abre imagens.
@@ -39,6 +39,7 @@ Duas armadilhas resolvidas no caminho:
 Environment=DIM_SECONDS=45
 Environment=SLIDE_SECONDS=90
 Environment=DIM_PERCENT=18
+Environment=SLIDE_PERCENT=8
 Environment=SLIDE_SECONDS_EACH=8
 ```
 

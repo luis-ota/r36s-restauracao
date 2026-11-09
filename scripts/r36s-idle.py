@@ -28,6 +28,7 @@ GAMES = ("drastic", "retroarch", "mupen64plus", "love", "ppsspp")
 DIM_SECONDS = float(os.environ.get("DIM_SECONDS", "60"))
 SLIDE_SECONDS = float(os.environ.get("SLIDE_SECONDS", "90"))
 DIM_PERCENT = float(os.environ.get("DIM_PERCENT", "45"))
+SLIDE_PERCENT = float(os.environ.get("SLIDE_PERCENT", str(DIM_PERCENT)))
 SLIDE_SECONDS_EACH = float(os.environ.get("SLIDE_SECONDS_EACH", "8"))
 MAX_SLIDE_MIN = float(os.environ.get("MAX_SLIDE_MIN", "30"))
 
@@ -205,11 +206,12 @@ def brilho_normal():
 
 normal = brilho_normal()
 baixo = max(1, min(normal, int(maxb * DIM_PERCENT / 100.0)))
+baixo_slide = max(1, min(normal, int(maxb * SLIDE_PERCENT / 100.0)))
 
 if len(sys.argv) > 1 and sys.argv[1] == "--once":
     print(
         f"max={maxb} normal={normal} baixo={baixo} imagens={len(imagens())} "
-        f"dim={DIM_SECONDS:g}s slide={SLIDE_SECONDS:g}s"
+        f"dim={DIM_SECONDS:g}s slide={SLIDE_SECONDS:g}s brilho_slide={baixo_slide}"
     )
     sys.exit(0)
 
@@ -264,7 +266,8 @@ while True:
                 parar_es()
                 dimmed = True
                 shown = True
-                if not slideshow(baixo):
+                write_bright(baixo_slide)
+                if not slideshow(baixo_slide):
                     shown = False
                     subir_es()
                 else:
