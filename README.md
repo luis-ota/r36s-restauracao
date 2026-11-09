@@ -50,4 +50,4 @@ Em [`scripts/`](scripts/):
 ## Licença
 
 Código e textos: MIT (veja [LICENSE](LICENSE)).
-Arte do tema: fan art não comercial, inspirada em *Serial Experiments Lain*; créditos no documento do tema.
+Tema: projeto de fã não comercial, inspirado em *Serial Experiments Lain*, sem imagens da série. Fontes IBM Plex sob a SIL OFL 1.1. Créditos no [documento do tema](docs/10-tema-lain.md).

@@ -108,6 +108,8 @@ grep ThemeSet /home/ark/.emulationstation/es_settings.cfg
 ls /etc/emulationstation/themes
 ```
 
+`/etc/emulationstation/themes` é um symlink para `/roms/themes/`. Se a partição de ROMs estiver vazia ou corrompida, todos os temas somem junto.
+
 Se a pasta não existe, instale um tema ou aponte para um que exista. O tema deste repositório está em [`themes/lain`](../themes/lain) e é descrito em [10 — Tema Lain](10-tema-lain.md).
 
 ## Ordem de diagnóstico que funciona

@@ -1,0 +1,173 @@
+<theme>
+	<formatVersion>3</formatVersion>
+
+	<!-- ============================================================
+	     LAIN  ·  nEther theme for EmulationStation / ArkOS 640x480
+	     Close the world, open the nEther.
+	     ============================================================ -->
+
+	<!-- ========================================================== -->
+	<!-- SYSTEM SELECT                                              -->
+	<!-- ========================================================== -->
+	<view name="system">
+		<image name="background" extra="true">
+			<tile>false</tile>
+			<pos>0 0</pos>
+			<origin>0 0</origin>
+			<size>1 1</size>
+			<path>./art/bg_systems.png</path>
+		</image>
+
+		<image name="mark" extra="true">
+			<tile>false</tile>
+			<pos>0.075 0.022</pos>
+			<origin>0 0</origin>
+			<size>0.145 0.0966</size>
+			<path>./art/mark.png</path>
+		</image>
+
+		<carousel name="systemcarousel">
+			<type>vertical</type>
+			<pos>0.037 0.295</pos>
+			<size>0.330 0.330</size>
+			<logoScale>1.34</logoScale>
+			<maxLogoCount>3</maxLogoCount>
+			<logoSize>0.300 0.090</logoSize>
+			<logoAlignment>left</logoAlignment>
+			<color>d9d1c1</color>
+			<colorEnd>bfb6a4</colorEnd>
+			<gradientType>horizontal</gradientType>
+			<defaultTransition>fade</defaultTransition>
+			<minLogoOpacity>0.55</minLogoOpacity>
+		</carousel>
+
+		<text name="logoText">
+			<fontPath>./art/plex-semibold.ttf</fontPath>
+			<fontSize>0.040</fontSize>
+			<color>07070a</color>
+			<alignment>center</alignment>
+			<forceUppercase>true</forceUppercase>
+		</text>
+
+		<image name="sig" extra="true">
+			<tile>false</tile>
+			<pos>0.040 0.650</pos>
+			<origin>0 0</origin>
+			<size>0.369 0.037</size>
+			<path>./art/tag.png</path>
+		</image>
+
+		<text name="systemInfo">
+			<visible>false</visible>
+		</text>
+
+		<helpsystem name="help">
+			<pos>0.5 0.912</pos>
+			<origin>0.5 0</origin>
+			<fontPath>./art/plex-light.ttf</fontPath>
+			<fontSize>0.024</fontSize>
+			<textColor>9c968a</textColor>
+			<iconColor>c1121f</iconColor>
+		</helpsystem>
+	</view>
+
+	<!-- ========================================================== -->
+	<!-- GAME LIST: basic / detailed / video                        -->
+	<!-- ========================================================== -->
+	<view name="basic, detailed, video">
+		<image name="background" extra="true">
+			<tile>false</tile>
+			<pos>0 0</pos>
+			<origin>0 0</origin>
+			<size>1 1</size>
+			<path>./art/bg_list.png</path>
+		</image>
+
+		<image name="mark" extra="true">
+			<tile>false</tile>
+			<pos>0.075 0.022</pos>
+			<origin>0 0</origin>
+			<size>0.145 0.0966</size>
+			<path>./art/mark.png</path>
+		</image>
+
+		<image name="sig" extra="true">
+			<tile>false</tile>
+			<pos>0.040 0.798</pos>
+			<origin>0 0</origin>
+			<size>0.369 0.037</size>
+			<path>./art/tag.png</path>
+		</image>
+
+		<text name="logoText">
+			<pos>0.963 0.030</pos>
+			<origin>1 0</origin>
+			<fontPath>./art/plex-semibold.ttf</fontPath>
+			<fontSize>0.037</fontSize>
+			<color>e8e1d2</color>
+			<alignment>right</alignment>
+			<forceUppercase>true</forceUppercase>
+		</text>
+
+		<textlist name="gamelist">
+			<pos>0.041 0.155</pos>
+			<size>0.515 0.600</size>
+			<lines>7</lines>
+			<fontPath>./art/plex-semibold.ttf</fontPath>
+			<fontSize>0.045</fontSize>
+			<alignment>left</alignment>
+			<horizontalMargin>0.028</horizontalMargin>
+			<selectorColor>c1121f</selectorColor>
+			<selectorColorEnd>8b0000</selectorColorEnd>
+			<selectorGradientType>horizontal</selectorGradientType>
+			<selectedColor>07070a</selectedColor>
+			<primaryColor>b6b0a3</primaryColor>
+			<secondaryColor>807a6e</secondaryColor>
+		</textlist>
+
+		<helpsystem name="help">
+			<pos>0.5 0.912</pos>
+			<origin>0.5 0</origin>
+			<fontPath>./art/plex-light.ttf</fontPath>
+			<fontSize>0.024</fontSize>
+			<textColor>9c968a</textColor>
+			<iconColor>c1121f</iconColor>
+		</helpsystem>
+	</view>
+
+	<!-- ========================================================== -->
+	<!-- GAME LIST: metadata                                        -->
+	<!-- ========================================================== -->
+	<view name="detailed, video">
+		<image name="md_image">
+			<pos>0.752 0.430</pos>
+			<origin>0.5 0.5</origin>
+			<maxSize>0.420 0.520</maxSize>
+		</image>
+
+		<text name="md_description">
+			<pos>0.038 0.700</pos>
+			<size>0.460 0.090</size>
+			<fontPath>./art/plex-regular.ttf</fontPath>
+			<fontSize>0.019</fontSize>
+			<color>8f897c</color>
+			<lineSpacing>1.15</lineSpacing>
+		</text>
+
+		<text name="md_lbl_players, md_players, md_lbl_genre, md_genre, md_lbl_developer, md_developer">
+			<visible>false</visible>
+		</text>
+
+		<text name="md_lbl_releasedate, md_lbl_rating, md_lbl_playcount, md_playcount, md_lbl_lastplayed">
+			<visible>false</visible>
+		</text>
+
+		<datetime name="md_releasedate, md_lastplayed">
+			<visible>false</visible>
+		</datetime>
+
+		<rating name="md_rating">
+			<visible>false</visible>
+		</rating>
+	</view>
+</theme>

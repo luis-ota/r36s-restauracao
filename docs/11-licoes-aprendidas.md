@@ -43,7 +43,20 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 
 20. **O que você descarta vale tanto quanto o que funciona.** Metade do tempo perdido foi em soluções plausíveis que não se aplicam a este hardware.
 
+## Sobre confiar em cartão (a parte que doeu)
+
+21. **Um sistema que funciona o dia inteiro pode não voltar do reboot.** Em um cartão que já tinha dado erro, o aparelho não ligou depois de um reboot: o ext4 perdeu diretórios inteiros (`/opt/system`, `/home/ark/...`) e o setor de boot do exFAT foi sobrescrito por dados de outro arquivo. O `e2fsck` deixou o root "limpo", mas sem esses diretórios.
+22. **`fsck` limpo não quer dizer sistema inteiro.** Depois do reparo, confira se os diretórios importantes ainda existem.
+23. **Teste com zeros e leitura pelo cache não prova nada.** Grave dados aleatórios, leia com `iflag=direct` e compare o hash. Sem isso, você mede a memória do PC, não o cartão.
+24. **Não gaste um cartão suspeito em alta capacidade.** Se ele guarda só uma fração do que anuncia, crie uma partição menor que o trecho já testado.
+25. **Guarde uma imagem boa com checksum.** Foi ela que trouxe o sistema de volta em minutos, em vez de refazer tudo. O que você alterou depois da imagem se perde, então leve scripts e temas para fora do cartão.
+26. **Um cartão pode passar no PC e falhar no aparelho.** Um cartão aprovado no leitor USB apareceu na segunda porta com o tamanho errado e erros de I/O. Teste também no slot onde ele vai ficar.
+27. **Tema em `/roms/themes` morre junto com a partição de ROMs.** Em `/etc/emulationstation/themes` há um symlink para lá.
+28. **O atalho do PortMaster em `/roms/ports` sumiu** depois da instalação de um port. A causa não foi confirmada. Deixe um segundo atalho em `/opt/system`.
+
 ## O que ainda não sabemos
+
+- A causa exata da corrupção no reboot. O cartão já era suspeito, mas não dá para descartar outra causa.
 
 - O motivo exato do erro de símbolo `udev` intermitente no SDL2 2.0.18.2. A hipótese mais forte é concorrência de display com processo órfão, mas não foi provado.
 - O blob Mali correto para casar userspace (`10.6`) com kernel (`11.7`) nesta imagem. Sem ele, qualquer app GLES cai para software.
