@@ -64,11 +64,11 @@ def nome_do_evento(dev):
         return ""
 
 
-def entradas():
-    """Abre so os controles. Dispositivo morto devolve EOF e nao pode contar como toque."""
+def entradas(abertos=()):
+    """Abre so os controles ainda fechados. Dispositivo morto devolve EOF e nao pode contar como toque."""
     fds = {}
     for dev in glob.glob("/dev/input/event*"):
-        if not any(n in nome_do_evento(dev) for n in NOMES_OK):
+        if dev in abertos or not any(n in nome_do_evento(dev) for n in NOMES_OK):
             continue
         try:
             fds[dev] = os.open(dev, os.O_RDONLY | os.O_NONBLOCK)
@@ -97,6 +97,24 @@ def jogo_rodando():
     return False
 
 
+def app_pelo_menu():
+    """O menu nao tem filhos parado; com jogo ou port aberto, tem. Parar o menu mataria esse app."""
+    pais = {}
+    nomes = {}
+    for caminho in glob.glob("/proc/[0-9]*/stat"):
+        try:
+            with open(caminho, "rb") as f:
+                inicio, resto = f.read().rsplit(b")", 1)
+            pid = int(caminho.split("/")[2])
+            nomes[pid] = inicio.split(b"(", 1)[1]
+            pais[pid] = int(resto.split()[1])
+        except (OSError, IndexError, ValueError):
+            continue
+    menu = b"emulationstatio"
+    binarios = {p for p, n in nomes.items() if n == menu and nomes.get(pais[p]) == menu}
+    return any(pai in binarios for pai in pais.values())
+
+
 def imagens():
     return sorted(glob.glob(IMAGES + "/*.jpg"))
 
@@ -119,10 +137,12 @@ def subir_es():
     subprocess.run(["systemctl", "start", "emulationstation"], check=False)
 
 
-def entradas_js():
+def entradas_js(abertos=()):
     """Interface legada do joystick: nao e bloqueada quando outro programa pega o evdev."""
     fds = {}
     for dev in glob.glob("/dev/input/js*"):
+        if dev in abertos:
+            continue
         try:
             fds[dev] = os.open(dev, os.O_RDONLY | os.O_NONBLOCK)
         except OSError:
@@ -132,6 +152,18 @@ def entradas_js():
 
 def slideshow(baixo):
     """Mostra as imagens ate alguem mexer. Devolve True se houve entrada."""
+    fds = {}
+    try:
+        return rodar_slideshow(baixo, fds)
+    finally:
+        for fd in fds.values():
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+
+
+def rodar_slideshow(baixo, fds):
     lista = imagens()
     if not lista:
         return False
@@ -139,9 +171,7 @@ def slideshow(baixo):
         return False
     write_bright(baixo)  # parar o ES devolve o brilho ao maximo
     limite = time.monotonic() + MAX_SLIDE_MIN * 60
-    fds = entradas_js()
-    if not fds:
-        fds = entradas()
+    fds.update(entradas_js() or entradas())
     # ao abrir o joystick vem um lote com o estado inicial; nao e toque
     time.sleep(0.2)
     for dev, fd in list(fds.items()):
@@ -188,9 +218,7 @@ def slideshow(baixo):
                     return True
             if time.monotonic() >= proximo_scan:
                 proximo_scan = time.monotonic() + 2.0
-                for dev, fd2 in entradas_js().items():
-                    if dev not in fds:
-                        fds[dev] = fd2
+                fds.update(entradas_js(fds))
             if proc.poll() is not None:
                 break
         proc.terminate()
@@ -248,7 +276,8 @@ last_scan = last
 def tocar():
     global last, dimmed, shown
     last = time.monotonic()
-    log(f"toque: shown={shown} dimmed={dimmed} normal={normal}")
+    if shown or dimmed:
+        log(f"toque: shown={shown} dimmed={dimmed} normal={normal}")
     if shown:
         shown = False
         matar_viewer()
@@ -284,7 +313,7 @@ while True:
                 write_bright(baixo)
                 dimmed = True
             if (not shown and parado >= SLIDE_SECONDS and not jogo_rodando()
-                    and not app_de_console() and not es_ativo()):
+                    and not app_de_console() and not app_pelo_menu()):
                 parar_es()
                 dimmed = True
                 shown = True
@@ -292,17 +321,15 @@ while True:
                 if not slideshow(baixo_slide):
                     shown = False
                     subir_es()
+                    last = time.monotonic()  # nao para o menu de novo enquanto ele sobe
                 else:
                     tocar()
 
     agora = time.monotonic()
     if agora - last_scan >= 5:
         last_scan = agora
-        novos = entradas()
-        for dev, fd in novos.items():
-            if dev not in fds:
-                fds[dev] = fd
-        for dev in [d for d in fds if d not in novos]:
+        fds.update(entradas(fds))
+        for dev in [d for d in fds if not os.path.exists(d)]:
             try:
                 os.close(fds.pop(dev))
             except OSError:

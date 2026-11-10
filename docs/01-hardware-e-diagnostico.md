@@ -4,7 +4,7 @@
 
 | Item | Valor |
 |---|---|
-| Modelo | R36S (clone RK3326) |
+| Modelo | R36S, placa "soy sauce" (RK3326) |
 | SoC | Rockchip RK3326, 4× Cortex-A35 |
 | RAM | 1 GB |
 | GPU | Mali-G31 (Bifrost), driver blob proprietário |
@@ -18,14 +18,14 @@ O R36S existe em várias revisões de placa e painel, e **cada revisão pede um 
 
 | Item | Valor |
 |---|---|
-| Placa | `Y3506_V03_20241210` (clone "soy sauce") |
+| Placa | `Y3506_V03_20241210` (família "soy sauce") |
 | DTB carregado pelo `boot.ini` | `/boot/rk3326-r35s-linux.dtb` |
 | md5 desse DTB | `9dd051f13539f98450d8b8b8d929b5c0` |
 | Painel dentro do DTB | `panel@0`, compatível `elida,kd35t133`, `simple-panel-dsi` |
 | `model` informado ao kernel | `Rockchip RK3326` |
 | `compatible` | `rockchip,rk3326-odroidgo3-linux` |
 
-O `elida,kd35t133` é o **driver do painel dentro** do DTB, não o nome do arquivo do DTB. Versões antigas deste documento chamavam isso de "painel V5"; V5 é outra revisão da placa (`Y3506_V05`), não esta. Detalhes em [14 — Hardware real](14-hardware-real-e-identificacao.md).
+O `elida,kd35t133` é o **driver do painel dentro** do DTB, não o nome do arquivo do DTB. Versões antigas deste documento chamavam isso de "painel V5". A placa impressa neste aparelho é V03, e a origem do rótulo "V5" não foi confirmada. Detalhes em [14 — Hardware real](14-hardware-real-e-identificacao.md).
 
 Se você trocar o `.dtb` da partição BOOT por um de outro painel — inclusive os de 60 Hz que circulam em guias de "melhorar o pacing" — o sintoma é **tela preta**, sem mensagem nenhuma. O sistema sobe, o SSH responde, e a tela fica apagada. Não é placa queimada: é DTB errado.
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Backup versionado dos saves do Pokemon Black. Roda pelo cron a cada 5 minutos.
+# Backup versionado dos saves do Pokemon Black. Roda pelo cron a cada 2 minutos.
 #
 # Guarda uma versao nova so quando o arquivo muda, entao um save estragado nao
 # empurra as copias boas para fora. Os backups ficam em outra particao, porque

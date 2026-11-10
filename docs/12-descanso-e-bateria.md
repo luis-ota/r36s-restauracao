@@ -12,7 +12,7 @@ Um daemon próprio ([`scripts/r36s-idle.py`](../scripts/r36s-idle.py)) cuida de 
 | 90 s | EmulationStation para e as imagens começam, trocando a cada 8 s, com brilho em 8% (12 de 160) |
 | qualquer toque | fecha as imagens, restaura o brilho e sobe o EmulationStation de volta |
 
-Com um jogo rodando, ele não age: nem escurece, nem abre imagens.
+Com um jogo rodando, ele não age: nem escurece, nem abre imagens. Se o menu tiver aberto qualquer outro programa, como um port, ele também não para o menu, porque isso mataria o programa.
 
 ## Por que parar o EmulationStation
 

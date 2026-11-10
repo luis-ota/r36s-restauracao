@@ -28,7 +28,7 @@ $ df -h /   # raiz com cerca de 90% de uso
 Quatro fatos, cada um já é motivo suficiente:
 
 1. **A base está morta desde julho de 2020.** Ubuntu 19.10 saiu de suporte e os repositórios apontam para `old-releases.ubuntu.com`, que é um **arquivo congelado**. Não há correção nova ali: você traria pacotes de 2020 por cima de uma imagem montada à mão.
-2. **O pacote do kernel está em `hold` de propósito.** Alguém travou `linux-odroid-go2` porque trocar o kernel neste aparelho quebra o boot. Um `upgrade` tenta resolver isso e pode destravar o que foi travado.
+2. **O pacote do kernel está em `hold` de propósito.** O motivo do `hold` em `linux-odroid-go2` não está documentado, mas a imagem depende deste kernel. Um `upgrade` tenta resolver isso e pode destravar o que foi travado.
 3. **A raiz estava com cerca de 90% de uso.** Um upgrade baixa e descompacta centenas de pacotes. Encher o disco no meio do processo deixa o sistema em estado inconsistente.
 4. **Sem rollback.** Não há snapshot, não há `btrfs`, não há como voltar. O único desfazer é regravar o cartão a partir de uma imagem.
 
@@ -41,13 +41,9 @@ Esta imagem não é um Ubuntu de desktop com pacotes soltos. Ela carrega binári
 - o blob proprietário do Mali (`libEGL`, `libGLESv2`, `libgbm` apontam todos para ele),
 - os emuladores standalone e as ferramentas do ArkOS.
 
-Um upgrade puxa glibc e bibliotecas mais novas. Os binários acima passam a pedir símbolos que não existem, ou pior, carregam uma biblioteca e falham no meio. O sintoma clássico aqui é:
+Um upgrade puxa glibc e bibliotecas mais novas. Os binários acima podem passar a pedir símbolos que não existem, ou carregar uma biblioteca e falhar no meio. Não testamos um upgrade aqui.
 
-```
-error while loading shared libraries: ... unsupported version 545 of Verneed record
-```
-
-Isso já aconteceu de forma controlada: um único arquivo do Mali trocado por uma cópia corrompida derrubou o EmulationStation inteiro. Um upgrade faz esse tipo de troca em dezenas de arquivos de uma vez.
+O que já foi visto é o tamanho do estrago de uma troca só: um único arquivo do Mali substituído por uma cópia corrompida derrubou o EmulationStation inteiro. Um upgrade troca dezenas de arquivos de uma vez.
 
 ## O que é razoável fazer
 

@@ -89,18 +89,20 @@ Consequências:
 - O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
 - A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
 
-Diagnóstico corrigido (esta seção dizia antes que faltava "o blob certo para o kernel", o que estava errado):
+Diagnóstico revisado. O blob nunca faltou na imagem, mas a causa exata desse erro continua sem prova:
 
 A imagem tem **dois blobs Mali** e uma cadeia de symlinks:
 
 | Caminho | Tamanho | Papel |
 |---|---|---|
 | `/usr/local/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-gbm.so` | 40.867.064 | **o correto**, usado pelo EmulationStation e pelo RetroArch |
-| `/usr/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-wayland-gbm.so` | 38.921.168 | variante wayland, com userspace diferente |
+| `/usr/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-wayland-gbm.so` | 38.921.168 | variante wayland |
 
-`libEGL.so`, `libGLESv2.so` e `libgbm.so` são symlinks. Em `/usr/lib` eles apontam para `libMali.so →` a variante **wayland**; em `/usr/local` apontam para o blob **GBM**. O erro `user 10.6, kernel 11.7` aparece quando o loader carrega a variante errada: foi exatamente o que aconteceu num teste que colocou `/usr/lib` antes de `/usr/local` no `LD_LIBRARY_PATH`.
+`libEGL.so`, `libGLESv2.so` e `libgbm.so` são symlinks. Em `/usr/lib` eles apontam para `libMali.so →` a variante **wayland**; em `/usr/local` apontam para o blob **GBM**. O driver do kernel é `r12p0` (UK 11.7). O erro `user 10.6, kernel 11.7` apareceu num teste com a ordem `/lib:/usr/lib:/usr/local/lib`, e foi confirmado depois que essa ordem faz o `libgbm` resolver para `/lib`, em vez de `/usr/local`.
 
-Consequências quando o blob errado é carregado:
+**Hipótese, não provada:** a variante wayland seria a que traz o userspace 10.6. O teste com a ordem correta foi interrompido, e a ocorrência original no PortMaster nunca foi ligada a essa causa.
+
+Consequências observadas:
 
 - O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
 - A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.

@@ -90,4 +90,6 @@ Isso não conserta a causa, mas devolve o menu. A causa precisa ser lida no log:
 sudo journalctl -u emulationstation -n 40 --no-pager
 ```
 
+Atenção: hoje o `systemd-journald` deste aparelho está mascarado, então o `journalctl` só mostra registros antigos. Confira com `systemctl is-enabled systemd-journald`. Se estiver `masked`, pare o serviço e rode `/usr/bin/emulationstation/emulationstation` pelo SSH para ver o erro.
+
 Foi assim que descobrimos o problema de SDL2 documentado em [07](07-emulationstation-e-sdl.md).

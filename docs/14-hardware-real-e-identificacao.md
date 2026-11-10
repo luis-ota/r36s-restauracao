@@ -1,6 +1,6 @@
-# 14 — Hardware real e identificação (clone "soy sauce")
+# 14 — Hardware real e identificação (placa "soy sauce")
 
-Este aparelho foi vendido como R36S, mas **não é uma R36S original**: a placa é da família `Y3506`, conhecida na comunidade como "soy sauce". Este documento mostra como identificar, o que foi medido, o que muda na prática e qual firmware serve.
+Este aparelho foi vendido como R36S, e a placa é da família `Y3506`, conhecida na comunidade como "soy sauce". Os projetos divergem sobre o que isso é: o dArkOSRE trata "soysauce" como categoria própria, o Arch R a lista entre os originais, e outras fontes a chamam de clone. Este documento mostra como identificar, o que foi medido, o que muda na prática e qual firmware serve.
 
 ## Por que identificar antes de qualquer coisa
 
@@ -34,9 +34,9 @@ O nome "R36S" não diz nada sobre a placa. Existem pelo menos três famílias de
 | `model` em execução | `Rockchip RK3326` |
 | `compatible` | `rockchip,rk3326-odroidgo3-linux` |
 
-Na tabela de compatibilidade do dArkOSRE, a placa `Y3506_v03_20241210` aparece na seção **"Soy Sauce"**, com status **completed** e testador. Ou seja: é um clone conhecido, mapeado e já testado por outra pessoa.
+Na tabela de compatibilidade do dArkOSRE, a placa `Y3506_v03_20241210` aparece na seção **"Soy Sauce"**, com status **completed** e testador. A própria tabela avisa que descreve os testes do projeto original, não a imagem mais recente do fork, que ainda pede validação física.
 
-> Correção de documentação anterior: este repositório dizia "painel V5" e "DTB `elida,kd35t133`". O `elida,kd35t133` é o **driver do painel dentro** do DTB, não o nome do DTB. E "V5" é outra revisão da placa (`Y3506_V05`), não esta. Esta é **V03**.
+> Correção de documentação anterior: este repositório dizia "painel V5" e "DTB `elida,kd35t133`". O `elida,kd35t133` é o **driver do painel dentro** do DTB, não o nome do DTB. A placa impressa neste aparelho é **V03**, e a origem do rótulo "V5" não foi confirmada.
 
 ## Inventário medido
 
@@ -62,7 +62,7 @@ Tudo abaixo foi lido do próprio aparelho, não veio de ficha de loja:
 
 | Aspecto | Muda? | Comentário |
 |---|---|---|
-| Desempenho | **Não** | Mesmo SoC, mesma GPU, mesma RAM, mesma tela. FPS é igual. |
+| Desempenho | Não deveria | Mesmo SoC e GPU, e mesma quantidade de RAM. **Não medido** contra uma unidade de outra placa. |
 | Tela | Depende | Mesma resolução; o lote do painel varia e exige DTB compatível. |
 | Controles | Às vezes | Analógicos e borrachas variam por lote. Aqui os analógicos são de verdade. |
 | Bateria | Às vezes | Capacidade e saúde variam. Aqui está saudável. |
@@ -71,7 +71,7 @@ Tudo abaixo foi lido do próprio aparelho, não veio de ficha de loja:
 | Valor de revenda | **Sim** | Não é o modelo "autêntico" que a comunidade referencia. |
 | Facilidade de firmware | **Sim** | Precisa de imagem com DTB para a placa certa. |
 
-Resumo honesto: **clone não é sinônimo de aparelho pior, é sinônimo de aparelho sem suporte oficial.** O que define a experiência é o SoC, e ele é o mesmo.
+Resumo: **placa diferente não quer dizer aparelho pior, e sim menos suporte dos projetos.** O SoC é o mesmo.
 
 ## A família de firmwares, sem confusão
 

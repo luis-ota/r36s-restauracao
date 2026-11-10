@@ -115,7 +115,7 @@ Se a pasta não existe, instale um tema ou aponte para um que exista. O tema des
 ## Ordem de diagnóstico que funciona
 
 1. `systemctl status emulationstation` — está `failed`?
-2. `journalctl -u emulationstation -n 40` — qual erro?
+2. `journalctl -u emulationstation -n 40` — qual erro? Com o `journald` mascarado, como neste aparelho hoje, rode o binário pelo SSH com o serviço parado.
 3. `ps -ef | grep -E "pugwash|love|btop"` — tem outro processo na tela?
 4. Teste `SDL_Init` (acima) — a biblioteca sobe?
 5. Só então mexa em symlink/tema.

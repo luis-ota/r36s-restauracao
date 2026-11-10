@@ -58,10 +58,10 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 
 29. **Dump de cartão morrendo também tem arquivo corrompido.** Uma cópia do blob Mali tirada do dump do cartão original tinha **o mesmo tamanho** do arquivo bom (40.867.064 bytes) e o cabeçalho de versão destruído; `readelf -V` acusava `Version: 545`. Validar com `sha256sum` **e** `readelf -V` antes de instalar qualquer arquivo vindo de dump.
 30. **Não rode `apt upgrade` nesta base.** Ubuntu 19.10 sem suporte, kernel em `hold`, pouco espaço livre e nenhum rollback. Ver [15 — Atualizações](15-atualizacoes-e-limites-da-base.md).
-31. **O journal desta imagem para de registrar** quando o relógio volta para 2020 no boot. Para serviço próprio, `StandardOutput=append:` num arquivo é mais confiável que `journalctl`.
+31. **O `systemd-journald` deste aparelho está mascarado**, então o `journalctl` só mostra registros antigos. Para serviço próprio, `StandardOutput=append:` num arquivo é mais confiável que `journalctl`.
 32. **`/proc/<pid>/comm` pode ter byte inválido.** Ler em texto quebra o serviço com `UnicodeDecodeError`; abra em binário e compare com `b"nome"`.
-33. **Teclado virtual precisa de todas as teclas** para o kernel classificá-lo como teclado, e o SDL precisa de ~2,5 s para enxergar o dispositivo novo depois do `UI_DEV_CREATE`.
-34. **O DraStic ignora joystick virtual e aceita teclado.** Salvar só passou a funcionar quando a tecla veio de um teclado `uinput`, não de um gamepad `uinput`.
+33. **O teclado virtual que funcionou registra as teclas 1 a 248 e espera 2,5 s** depois do `UI_DEV_CREATE`. O teste mudou a tecla e a quantidade ao mesmo tempo, então não dá para dizer qual detalhe foi decisivo.
+34. **Joystick virtual não fez o DraStic salvar; teclado virtual fez.** O motivo não foi isolado. Salvar só passou a funcionar quando a tecla veio de um teclado `uinput`, não de um gamepad `uinput`.
 35. **Reiniciar um serviço próprio no meio do jogo é seguro; parar o EmulationStation não é.** Derrubar o menu mata o DraStic junto.
 
 ## O que ainda não sabemos
@@ -71,7 +71,7 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 - O motivo exato do erro de símbolo `udev` intermitente no SDL2 2.0.18.2. A hipótese mais forte é concorrência de display com processo órfão, mas não foi provado.
 - ~~O blob Mali correto para casar userspace (`10.6`) com kernel (`11.7`) nesta imagem.~~
 
-  **Corrigido:** o blob nunca faltou. A imagem enxuta já tinha o arquivo certo, de 40.867.064 bytes. O erro `10.6` contra `11.7` aparece quando o loader carrega a **outra** variante do Mali (a wayland, em `/usr/lib`). Ver [06 — PortMaster](06-portmaster.md).
+  **Revisado:** o blob nunca faltou. A imagem enxuta já tinha o arquivo certo, de 40.867.064 bytes. A causa do erro `10.6` contra `11.7` continua sem prova. A suspeita é o loader pegar a outra variante do Mali (a wayland, em `/usr/lib`). Ver [06 — PortMaster](06-portmaster.md).
 
 - O comportamento do DraStic no boot: por que o load automático às vezes abre na tela inferior do DS. Ver [13 — Autosave](13-autosave-e-load-automatico.md).
 - Quanto de ganho real o governor `performance` dá em cada jogo. Só sabemos que a frequência para de oscilar.

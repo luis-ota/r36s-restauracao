@@ -23,7 +23,7 @@ Tudo aqui foi testado no aparelho. O que não foi medido está marcado como **n�
 | [11 — Lições aprendidas](docs/11-licoes-aprendidas.md) | Lista curta do que economiza horas |
 | [12 — Descanso e bateria](docs/12-descanso-e-bateria.md) | Screensaver, slideshow e escurecimento real do painel |
 | [13 — Autosave e load automático](docs/13-autosave-e-load-automatico.md) | Teclado virtual, `F5`/`F7`, o serviço que salva sozinho e o atalho SELECT + START |
-| [14 — Hardware real e identificação](docs/14-hardware-real-e-identificacao.md) | Esta placa é clone "soy sauce", inventário medido e qual firmware serve |
+| [14 — Hardware real e identificação](docs/14-hardware-real-e-identificacao.md) | Placa da família "soy sauce", inventário medido e opções de firmware |
 | [15 — Atualizações e limites da base](docs/15-atualizacoes-e-limites-da-base.md) | Por que `apt upgrade` aqui é má ideia, com os números na mão |
 
 ## Scripts
@@ -46,7 +46,7 @@ Em [`scripts/`](scripts/):
 
 ## Contexto do aparelho
 
-- **Modelo:** R36S vendida como original, mas é **clone "soy sauce"**: placa `Y3506_V03_20241210`. Tela 640×480, DTB `rk3326-r35s-linux.dtb` com painel `elida,kd35t133`. Detalhes e medições em [14](docs/14-hardware-real-e-identificacao.md).
+- **Modelo:** vendido como R36S, placa da família **"soy sauce"**: `Y3506_V03_20241210`. Tela 640×480, DTB `rk3326-r35s-linux.dtb` com painel `elida,kd35t133`. Detalhes e medições em [14](docs/14-hardware-real-e-identificacao.md).
 - **Sistema:** ArkOS 2.0, build 04232022 — Ubuntu 19.10, glibc 2.30, kernel 4.4, GPU Mali-G31 (Bifrost).
 - **Armazenamento:** sistema no cartão TF1; jogos em um segundo cartão (TF2), montado em `/mnt/jogos` e apontado pelo `es_systems.cfg`.
 - **Controle:** gamepad `GO-Super Gamepad` em `/dev/input/event1`. SELECT = 704, START = 705; **SELECT + START por 1 s fecha o jogo**.

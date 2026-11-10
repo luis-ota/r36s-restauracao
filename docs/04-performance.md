@@ -93,6 +93,8 @@ Se `scaling_cur_freq` oscilar durante o jogo, o `perfmax`/`perfnorm` ainda está
 - `ModemManager` e `cups` desligados: nenhum uso neste aparelho.
 - RetroArch: `menu_driver=rgui` (mais leve que o ozone), `audio_resampler_quality=0`, shaders e rewind desligados.
 - Governadores no máximo no boot via `r36s-perf.service`.
+- Cartão de jogos com agendador `deadline`, aplicado pelo `r36s-perf.sh`. Hipótese: menos travadas quando uma leitura da ROM coincide com um save. Ganho não medido.
+- RetroArch com `audio_out_rate = "44100"`, igual ao `dmix` do `.asoundrc`, para evitar conversão dupla. Ganho não medido.
 
 ## O que o EmulationStation custa
 
@@ -111,7 +113,7 @@ Um estudo separado (benchmarks em Rust, bash e Python, mais análise do binário
 - O gargalo é CPU/GPU do RK3326, e um quadro a 60 fps dura 16,7 ms. Nenhuma das economias medidas é por quadro: são por lançamento de jogo, a cada 30 s ou a cada 5 min.
 - O EmulationStation fica **bloqueado** durante o jogo, então não disputa CPU.
 - `btop` já é Rust. Os daemons do ArkOS dormem em `poll` e não estão no caminho do quadro.
-- O único ruído periódico é o backup automático a cada 5 minutos, que mexe no cartão — e a solução é agendamento, não reescrita.
+- O único ruído periódico é o backup automático (hoje a cada 2 minutos), que mexe no cartão — e a solução é agendamento, não reescrita.
 
 Resultado negativo, mas com prova: os números não sustentam a troca. Se um dia aparecer um front-end em Rust que aceite os temas e gamelists deste EmulationStation, a conversa muda.
 
@@ -124,7 +126,7 @@ O backup espelha o último savestate bom no **slot 9**. Assim, para recuperar, b
 - O slot 9 é reservado para isso: não use para savestate manual.
 - Atualiza a cada 2 minutos (só quando o state muda) e ao fechar o jogo.
 - Continua existindo o histórico numerado em `/home/ark/pokemon-backups`, com o atalho **Ports → Restaurar backup do Pokemon** para versões mais antigas.
-- São mantidas **12 versões recentes + 6 marcos antigos** de cada state. Com autosave a cada 3 minutos, isso cobre cerca de 1 hora, mais os marcos.
+- São mantidas **12 versões recentes + 6 marcos antigos** de cada state. Com autosave a cada 3 minutos, as recentes cobrem cerca de 36 minutos de jogo, e os marcos guardam pontos mais antigos.
 
 ### Slots do DraStic neste aparelho
 

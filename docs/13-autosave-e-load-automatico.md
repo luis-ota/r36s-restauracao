@@ -32,15 +32,15 @@ Tudo abaixo foi testado e descartado com medição, não por suposição:
 | Apertar `KEY_S` (`keycode 31`) | Nenhum efeito |
 | Serviço periódico apertando o botão R1 | Nenhum efeito |
 
-**Conclusão medida:** o DraStic só lê o controle físico (`/dev/input/event1`) e ignora aparelhos virtuais como joystick. O que ele aceita é **teclado**.
+**O que foi medido:** joysticks virtuais não fizeram o DraStic salvar, e um teclado virtual apertando F5 fez. O motivo de o joystick não funcionar não foi isolado.
 
 ## A solução: teclado virtual
 
 O DraStic usa SDL2 (`libSDL2-2.0.so.0.18.2`) e abre os dispositivos de entrada por evdev. Um teclado virtual criado em `/dev/uinput` **é lido**.
 
-Três detalhes que fizeram a diferença:
+O que o script faz. O teste que funcionou mudou a tecla e a quantidade de teclas ao mesmo tempo, então não dá para dizer qual detalhe foi decisivo:
 
-1. **Registrar todas as teclas, não só uma.** Um dispositivo com uma única tecla não é classificado como teclado pelo kernel. O script registra as teclas `1..248`.
+1. **Registra as teclas `1..248`**, não só uma.
 2. **Esperar 2,5 s depois de criar o aparelho.** O SDL precisa enxergar o dispositivo novo antes do primeiro evento.
 3. **Destruir o dispositivo depois do aperto.** Não fica nada pendurado entre um save e outro.
 
@@ -94,9 +94,9 @@ jogo fecha → desarma, zera contadores
 | `JOGO_NOVO = 30 s` | Só faz load automático em processo recém-aberto. Serviço reiniciado no meio da partida **não** recarrega nada. |
 | Detecção por leitura de arquivo | Não basta ver o botão: o DraStic tem que ter **lido** o `.dss`. `inotify` com `IN_OPEN`/`IN_ACCESS` no diretório de savestates. |
 | `JANELA_LOAD = 3 s` | A leitura tem que ser logo depois do `F7`/`L1`, senão é outra coisa lendo o arquivo. |
-| `flock` no lock do backup | O backup roda a cada 2 min e **também lê** os `.dss`. Sem isso, cada rodada do cron "armaria" o autosave sozinho. |
+| `flock` no lock do backup | O backup roda a cada 2 min e **também lê** os `.dss`. Sem isso, uma leitura do backup que coincidisse com um L1 ou F7 sem efeito poderia ligar o autosave. |
 | Sem atividade, sem save | Se você parou de jogar, não faz sentido gastar escrita no cartão. |
-| `SIGTERM`, não `SIGKILL` | O atalho de fechar pede para o DraStic sair direito, para ele gravar o `.dsv` do jogo. |
+| `SIGTERM`, não `SIGKILL` | O atalho de fechar pede para o DraStic sair, em vez de matar o processo à força. Não foi testado se isso grava o `.dsv`, então salve dentro do jogo antes de fechar. |
 
 ## O atalho para fechar: SELECT + START
 
@@ -189,7 +189,7 @@ Não mexe em arquivo nenhum do DraStic: é só o serviço parando de apertar tec
 
 - O autosave grava no **slot ativo** (hoje o **slot 1**, o mesmo do `R1`).
 - O backup a cada 2 minutos copia o state para `/home/ark/pokemon-backups` e espelha o mais recente no **slot 9**.
-- São guardadas **12 versões recentes + 6 marcos antigos** de cada state. Com autosave a cada 3 minutos, isso é cerca de 1 hora de janela, mais os marcos.
+- São guardadas **12 versões recentes + 6 marcos antigos** de cada state. Com autosave a cada 3 minutos, as recentes cobrem cerca de 36 minutos de jogo, e os marcos guardam pontos mais antigos.
 - Para voltar atrás: **Ports → Restaurar backup do Pokemon**, ou copiar a versão desejada de `~/pokemon-backups/"Pokemon - Black Version_1.dss"/000123.dss` para o slot, com o jogo fechado.
 
 ## Linha do tempo dos testes (o que foi medido)
@@ -203,11 +203,12 @@ Não mexe em arquivo nenhum do DraStic: é só o serviço parando de apertar tec
 | 22:08:33 | Serviço reiniciado com o jogo aberto: **não** recarregou nada (trava `JOGO_NOVO`). |
 | 22:09 | `SELECT + START` fechou o jogo pelo log. |
 | 22:09:30 | Jogo aberto de novo: `F7` na primeira tentativa, load detectado, autosave armado. |
+| Depois | Aparelho reiniciado: o serviço subiu sozinho e o autosave funcionou nessa sessão. |
+| 06:18:43 | `SELECT + START` com o autosave ligado: log "salvo antes de fechar" e slot 1 gravado. |
 
 ## O que ainda não foi confirmado
 
 - **Tela de baixo ao carregar.** Às vezes o load abre na tela inferior do DS e é preciso trocar de tela. A causa não foi confirmada; a suspeita é que o state guarda a tela em que foi salvo. Não foi colocado nenhum "swap" automático para não inverter quando já abre certo.
-- **Boot do aparelho.** A unit está `enabled`, mas o comportamento do serviço depois de um reboot não foi testado. Se o jogo abrir do zero, basta apertar `L1`.
 - **Outros jogos de DS.** Tudo foi validado com um jogo só. A lógica é do emulador, não do jogo, então deve valer para todos, mas não foi medido.
 
 ## Cuidado com uma coisa

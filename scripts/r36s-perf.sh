@@ -5,3 +5,5 @@ chmod 666 "$CPU/scaling_governor" "$CPU/scaling_min_freq" "$GPU/governor" 2>/dev
 echo performance > "$CPU/scaling_governor"
 echo 1296000 > "$CPU/scaling_min_freq"
 echo performance > "$GPU/governor"
+# cartao de jogos: leitura da ROM nao fica atras de um save
+[ -w /sys/block/mmcblk1/queue/scheduler ] && echo deadline > /sys/block/mmcblk1/queue/scheduler

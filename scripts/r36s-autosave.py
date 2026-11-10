@@ -181,7 +181,8 @@ def main():
         if inotify in prontos and leu_savestate(inotify) and not backup_rodando():
             ultimo_read = agora
 
-        atual = pid_drastic()
+        # com o jogo aberto, confere so o proprio processo em vez de varrer o /proc
+        atual = pid if pid and os.path.exists("/proc/%d/comm" % pid) else pid_drastic()
         if atual != pid:
             pid = atual
             armado = False
