@@ -26,6 +26,13 @@ Tudo aqui foi testado no aparelho. O que não foi medido está marcado como **n�
 | [14 — Hardware real e identificação](docs/14-hardware-real-e-identificacao.md) | Placa da família "soy sauce", inventário medido e opções de firmware |
 | [15 — Atualizações e limites da base](docs/15-atualizacoes-e-limites-da-base.md) | Por que `apt upgrade` aqui é má ideia, com os números na mão |
 
+## Posts no blog
+
+Dois textos em inglês contam a história por fora da documentação:
+
+- [rebuilding a dead r36s, one lying card at a time](https://blog.wired.rs/posts/r36s-restoration) — a jornada completa: o boot que travou, os cartões que mentiam sobre o tamanho, a imagem mínima e a placa que não é a da etiqueta.
+- [teaching a ds emulator to save itself](https://blog.wired.rs/posts/drastic-autosave-uinput) — o autosave do DraStic por teclado virtual, em detalhe.
+
 ## Scripts
 
 Em [`scripts/`](scripts/):
