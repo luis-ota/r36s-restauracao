@@ -89,9 +89,29 @@ Consequências:
 - O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
 - A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
 
-Causa provável: blob Mali de userspace incompatível com o driver de kernel desta imagem. Corrigir isso exige o blob certo para o kernel — não é ajuste de configuração.
+Diagnóstico corrigido (esta seção dizia antes que faltava "o blob certo para o kernel", o que estava errado):
 
-Solução adotada: **não competir pela tela**. Rodar o PortMaster com o EmulationStation parado (veja abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece.
+A imagem tem **dois blobs Mali** e uma cadeia de symlinks:
+
+| Caminho | Tamanho | Papel |
+|---|---|---|
+| `/usr/local/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-gbm.so` | 40.867.064 | **o correto**, usado pelo EmulationStation e pelo RetroArch |
+| `/usr/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-wayland-gbm.so` | 38.921.168 | variante wayland, com userspace diferente |
+
+`libEGL.so`, `libGLESv2.so` e `libgbm.so` são symlinks. Em `/usr/lib` eles apontam para `libMali.so →` a variante **wayland**; em `/usr/local` apontam para o blob **GBM**. O erro `user 10.6, kernel 11.7` aparece quando o loader carrega a variante errada: foi exatamente o que aconteceu num teste que colocou `/usr/lib` antes de `/usr/local` no `LD_LIBRARY_PATH`.
+
+Consequências quando o blob errado é carregado:
+
+- O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
+- A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
+
+Regra: **não reordene os caminhos de biblioteca**. O EGL tem que resolver para o blob GBM de `/usr/local`. Se mexer nisso, confira com:
+
+```bash
+ldd /opt/retroarch/bin/retroarch | grep -E "libEGL|libgbm"
+```
+
+Solução adotada para a sobreposição: **não competir pela tela**. Rodar o PortMaster com o EmulationStation parado (veja abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece.
 
 ## Armadilha 5: instância antiga esquecida
 

@@ -8,17 +8,24 @@
 | SoC | Rockchip RK3326, 4× Cortex-A35 |
 | RAM | 1 GB |
 | GPU | Mali-G31 (Bifrost), driver blob proprietário |
-| Tela | 640×480, painel **V5** |
+| Tela | 640×480, DSI, painel `elida,kd35t133` |
 | Sistema | ArkOS 2.0 build 04232022 (Ubuntu 19.10, glibc 2.30, kernel 4.4) |
 | Controle | `GO-Super Gamepad` em `/dev/input/event1` |
 
 ## O ponto mais importante: a tela
 
-O R36S existe em várias revisões de painel, e **cada revisão pede um DTB diferente**. O DTB de fábrica deste aparelho é:
+O R36S existe em várias revisões de placa e painel, e **cada revisão pede um DTB diferente**. Neste aparelho:
 
-```
-elida,kd35t133
-```
+| Item | Valor |
+|---|---|
+| Placa | `Y3506_V03_20241210` (clone "soy sauce") |
+| DTB carregado pelo `boot.ini` | `/boot/rk3326-r35s-linux.dtb` |
+| md5 desse DTB | `9dd051f13539f98450d8b8b8d929b5c0` |
+| Painel dentro do DTB | `panel@0`, compatível `elida,kd35t133`, `simple-panel-dsi` |
+| `model` informado ao kernel | `Rockchip RK3326` |
+| `compatible` | `rockchip,rk3326-odroidgo3-linux` |
+
+O `elida,kd35t133` é o **driver do painel dentro** do DTB, não o nome do arquivo do DTB. Versões antigas deste documento chamavam isso de "painel V5"; V5 é outra revisão da placa (`Y3506_V05`), não esta. Detalhes em [14 — Hardware real](14-hardware-real-e-identificacao.md).
 
 Se você trocar o `.dtb` da partição BOOT por um de outro painel — inclusive os de 60 Hz que circulam em guias de "melhorar o pacing" — o sintoma é **tela preta**, sem mensagem nenhuma. O sistema sobe, o SSH responde, e a tela fica apagada. Não é placa queimada: é DTB errado.
 

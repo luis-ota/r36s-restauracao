@@ -21,7 +21,7 @@ MIN_DSV_KB="${MIN_DSV_KB:-64}"        # .dsv menor que isso e save vazio do DraS
 # Quantas versoes manter: recentes, mais "marcos" (uma a cada 10) para ter
 # algo antigo se o estrago so for percebido bem depois.
 KEEP_DSV=12; MARKS_DSV=12
-KEEP_DSS=5;  MARKS_DSS=3
+KEEP_DSS=12; MARKS_DSS=6
 
 # Numera as versoes em vez de usar a data: o relogio deste aparelho volta para
 # 2020 quando liga sem rede.
