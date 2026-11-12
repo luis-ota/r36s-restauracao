@@ -75,7 +75,7 @@ sudo rm -rf /roms2
 
 Quando o segundo cartão está realmente montado em `/roms2`, o comportamento é intencional (veja [09 — Cartão TF2](09-cartao-tf2.md)).
 
-## Armadilha 4: EGL/Mali quebrado e interface "transparente"
+## Armadilha 4: GLES/Mali e a interface "transparente"
 
 Sintomas:
 
@@ -86,34 +86,31 @@ Failed creating base context during opening of kernel driver.
 
 Consequências:
 
-- O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
+- O splash (feito em LÖVE) não abre. O runtime do LÖVE não consegue criar o contexto GL. Detalhes e tudo que foi tentado em [16 — LÖVE e GLES](16-love-e-gles.md).
 - A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
 
-Diagnóstico revisado. O blob nunca faltou na imagem, mas a causa exata desse erro continua sem prova:
+### O que está medido
 
-A imagem tem **dois blobs Mali** e uma cadeia de symlinks:
+A imagem tem **dois blobs Mali** e os nomes `libEGL`, `libGLESv2` e `libgbm` são symlinks:
 
 | Caminho | Tamanho | Papel |
 |---|---|---|
-| `/usr/local/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-gbm.so` | 40.867.064 | **o correto**, usado pelo EmulationStation e pelo RetroArch |
-| `/usr/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-wayland-gbm.so` | 38.921.168 | variante wayland |
+| `/usr/local/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-gbm.so` | 40.867.064 | blob GBM, o que `/usr/local` resolve para `libEGL`, `libGLESv2` e `libgbm` |
+| `/usr/lib/aarch64-linux-gnu/libmali-bifrost-g31-rxp0-wayland-gbm.so` | 38.921.168 | blob wayland, o que `/usr/lib` e `/lib` resolvem para os mesmos nomes |
 
-`libEGL.so`, `libGLESv2.so` e `libgbm.so` são symlinks. Em `/usr/lib` eles apontam para `libMali.so →` a variante **wayland**; em `/usr/local` apontam para o blob **GBM**. O driver do kernel é `r12p0` (UK 11.7). O erro `user 10.6, kernel 11.7` apareceu num teste com a ordem `/lib:/usr/lib:/usr/local/lib`, e foi confirmado depois que essa ordem faz o `libgbm` resolver para `/lib`, em vez de `/usr/local`.
+O EmulationStation funciona com os dois mapeados. O erro `user 10.6, kernel 11.7` aparece depois que o SDL carrega o blob wayland por nome, durante a escolha do driver de vídeo (trilha completa em [16](16-love-e-gles.md)).
 
-**Hipótese, não provada:** a variante wayland seria a que traz o userspace 10.6. O teste com a ordem correta foi interrompido, e a ocorrência original no PortMaster nunca foi ligada a essa causa.
+**Ligação de causa ainda não provada:** que o blob wayland é o responsável pela versão `10.6`. A sequência é observada; a causa, não.
 
-Consequências observadas:
+### O que fazer agora
 
-- O splash (feito em LÖVE) não abre: `Could not create EGL window surface`.
-- A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
+- **Não reordene os caminhos de biblioteca** para "consertar" isso: o EGL precisa continuar resolvendo para o blob GBM de `/usr/local`. Confira com:
 
-Regra: **não reordene os caminhos de biblioteca**. O EGL tem que resolver para o blob GBM de `/usr/local`. Se mexer nisso, confira com:
+  ```bash
+  ldd /opt/retroarch/bin/retroarch | grep -E "libEGL|libgbm"
+  ```
 
-```bash
-ldd /opt/retroarch/bin/retroarch | grep -E "libEGL|libgbm"
-```
-
-Solução adotada para a sobreposição: **não competir pela tela**. Rodar o PortMaster com o EmulationStation parado (veja abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece.
+- Para a sobreposição visual, a solução é **não competir pela tela**: rodar o PortMaster com o EmulationStation parado (veja o launcher abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece. O erro de GL continua.
 
 ## Armadilha 5: instância antiga esquecida
 
@@ -176,4 +173,4 @@ sudo systemctl start emulationstation
 
 No primeiro uso o PortMaster baixa `pylibs.zip` e cria `pylibs/`. Precisa de internet no aparelho — o Wi-Fi aqui dá conta (~200 Mb/s). Se a tela travar no primeiro download, espere: ele está extraindo.
 
-Runtimes de ports específicos (Love, Mono, etc.) são baixados por port, quando necessários.
+Runtimes de ports específicos (Love, Mono, etc.) são baixados por port, quando necessários. O runtime do LÖVE 11.5 está instalado, mas não abre janela neste ArkOS (ver [16](16-love-e-gles.md)).
