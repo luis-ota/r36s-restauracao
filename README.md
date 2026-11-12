@@ -25,6 +25,8 @@ Tudo aqui foi testado no aparelho. O que não foi medido está marcado como **n�
 | [13 — Autosave e load automático](docs/13-autosave-e-load-automatico.md) | Teclado virtual, `F5`/`F7`, o serviço que salva sozinho e o atalho SELECT + START |
 | [14 — Hardware real e identificação](docs/14-hardware-real-e-identificacao.md) | Placa da família "soy sauce", inventário medido e opções de firmware |
 | [15 — Atualizações e limites da base](docs/15-atualizacoes-e-limites-da-base.md) | Por que `apt upgrade` aqui é má ideia, com os números na mão |
+| [16 — LÖVE e GLES](docs/16-love-e-gles.md) | Por que o runtime do LÖVE não abre janela neste ArkOS, com todas as tentativas (inclusive as que falharam) |
+| [17 — Música de fundo do menu](docs/17-musica-de-fundo-do-menu.md) | A faixa chill do menu: como foi gerada, onde fica, como trocar ou remover |
 
 ## Posts no blog
 
@@ -49,7 +51,14 @@ Em [`scripts/`](scripts/):
 - `backup_pokemon.sh` — backup versionado dos saves, com espelho no slot 9.
 - `restaurar-save.sh` — atalho do menu Ports para restaurar uma versão antiga.
 - `r36s-usbnet.sh` — rede por USB (gadget Ethernet).
-- `r36s-idle.py` — escurece a luz de fundo por inatividade e devolve ao toque.
+- `r36s-idle.py` — escurece a luz de fundo por inatividade, faz slideshow e, depois de 30 min, entra em descanso profundo (menu fora, brilho mínimo). Ver [12](docs/12-descanso-e-bateria.md).
+
+## Experimentos
+
+Arquivos que **não** fazem parte do sistema instalado. Estão aqui para reproduzir o que foi testado:
+
+- [`experimentos/love-gles/`](experimentos/love-gles/) — teste do LÖVE no aparelho (`main.lua`), shim de `dlopen` (`dlshim.c`) e o script de ciclo completo (`teste-love.sh`). Não resolve o erro de GLES; ver [16](docs/16-love-e-gles.md).
+- [`experimentos/musica-menu/`](experimentos/musica-menu/) — `synth.py`, que gera a faixa chill do menu por síntese. O arquivo de áudio não é versionado; ele sai do script. Ver [17](docs/17-musica-de-fundo-do-menu.md).
 
 ## Contexto do aparelho
 
