@@ -62,11 +62,15 @@ O encode para OGG foi feito com ffmpeg no PC. O comando exato não ficou registr
 
 Quando a faixa começa, o ES mostra uma pílula branca no topo da tela com o nome da música (`lain_menu_chill`), por cerca de 7 segundos.
 
-Prova em gravação do menu com o ES reiniciado (quadros capturados a cada ~0,6 s):
+Prova em gravação do menu com o ES reiniciado (quadros capturados a cada ~0,6 s). Quadro 08, com o pop-up na tela:
 
-- [quadro com o pop-up](img/menu-popup-musica.png) (quadro 08 da gravação);
-- [recorte do pop-up](img/menu-popup-recorte.png);
-- [vídeo da gravação](img/gravacao-popup-musica.mp4).
+![Menu do ES com o pop-up da faixa](img/menu-popup-musica.png)
+
+Recorte do pop-up:
+
+![Recorte do pop-up](img/menu-popup-recorte.png)
+
+[Vídeo da gravação (60 quadros)](img/gravacao-popup-musica.mp4).
 
 Nos quadros, só a região do pop-up (x 254–385, y 10–47) muda; o resto da tela não muda. Ele fica visível do quadro 08 ao 19 (12 quadros) e some nos quadros 20–21.
 

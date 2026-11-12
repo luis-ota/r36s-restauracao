@@ -2,7 +2,13 @@
 
 **Status: o LÖVE 11.5 do PortMaster abre janela e roda neste ArkOS.** Os erros de `/dev/mali0` aparecem no log, mas não impedem o jogo de desenhar.
 
-Prova (gravação da tela, quadros reais): [quadro inicial](img/love-quadro-inicio.png), [quadro no meio da execução](img/love-quadro-meio.png) e [o vídeo da execução](img/gravacao-love.mp4).
+Prova (captura real da tela do aparelho):
+
+| Início da execução (`t = 0.2`) | Meio da execução (`t = 12.2`, `fps: 77`) |
+|---|---|
+| ![LÖVE no início](img/love-quadro-inicio.png) | ![LÖVE no meio](img/love-quadro-meio.png) |
+
+[Vídeo da execução completa (40 quadros)](img/gravacao-love.mp4).
 
 ## Correção desta versão do documento
 
