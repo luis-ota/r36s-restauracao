@@ -29,9 +29,20 @@ Se um jogo começar durante o slideshow, o daemon não faz nada com o menu, para
 
 ### O que foi medido e o que não foi
 
-- **Medido no aparelho:** a versão nova instalada, a sintaxe, e a estabilidade de descritores de arquivo do daemon depois de reinício (5 descritores, 0 reinícios em 32 s).
-- **Diferença conhecida:** depois dessa medição, removi do repositório uma variável sem efeito (`RESTING_MIN`). O aparelho ainda roda a versão anterior, que só carrega essa variável sem usar. O arquivo instalado vai ser atualizado no próximo reinício do daemon, para não interromper o slideshow agora.
-- **Não medido:** o caminho completo de 30 minutos de slideshow até o descanso profundo, e o retorno pelo toque depois dele. Não foi cronometrado no aparelho. Para testar sem esperar, use `MAX_SLIDE_MIN=1` e `SLIDE_SECONDS=10` no serviço e observe o log.
+- **Medido no aparelho:** o ciclo completo com tempos reduzidos (escurecer em 5 s, slideshow em 10 s, descanso após 1 min de slideshow), feito com um drop-in de `systemd` que foi removido depois. Resultado: no slideshow a música tocou (`aplay` ativo) e o volume caiu para -29,8 dB; no descanso profundo a música parou, o volume voltou ao valor de uso (`volume restaurado=213`) e o brilho foi para 1. Depois do teste, o brilho voltou a 88 e o ES e o daemon ficaram ativos.
+- **Não medido:** o caminho de 30 minutos de verdade (o teste acima usou tempos reduzidos), e a volta pelo toque físico no controle. O toque não foi testado com o daemon novo porque não dá para apertar o botão daqui.
+
+## Música no slideshow
+
+Com o slideshow, o EmulationStation para (ver acima) e a música de fundo também para, porque ela é do ES. Por isso o daemon toca a faixa por conta própria:
+
+- o PCM da faixa fica em `/home/ark/.r36s-idle/musica/lain_menu_chill.raw` (fora de `/roms/bgmusic`, para o ES não listar), e é tocado em loop com `cat ... | aplay`;
+- o volume acompanha a proporção do brilho: ao escurecer, o volume cai na mesma proporção, com piso de 20% do volume de uso (`MUSIC_FLOOR=0.20`);
+- o volume original fica guardado em `/etc/r36s-idle.volume` e volta ao tocar, ao sair do slideshow ou ao iniciar o daemon;
+- no descanso profundo, a música para;
+- ao receber SIGTERM ou SIGINT, o daemon para a música e restaura o volume antes de sair. Ao iniciar, mata qualquer player órfão desse arquivo.
+
+O comando de volume usa `amixer -c 0 set Playback -- <dB>`. O `--` é obrigatório: sem ele, o `amixer` não aceita valores negativos.
 
 Com um jogo rodando, ele não age: nem escurece, nem abre imagens. Se o menu tiver aberto qualquer outro programa, como um port, ele também não para o menu, porque isso mataria o programa.
 
