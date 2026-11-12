@@ -67,10 +67,11 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 ## Sobre diagnóstico de GPU e bibliotecas (LÖVE)
 
 36. **`readelf` e `objdump` do próprio aparelho não são confiáveis para blob Mali.** Emitem avisos de símbolo fora do `sh_info` e contagens que não batem. Copie o blob para o PC e leia com `pyelftools`.
-37. **Leia a ordem de carga antes de chutar causa.** `LD_DEBUG=files` mostrou em uma rodada o que seis rodadas de tentativa (`LD_LIBRARY_PATH`, `RPATH`, driver do SDL) não tinham mostrado. Ver [16](16-love-e-gles.md).
+37. **Olhe a tela antes de concluir qualquer coisa.** Eu passei horas concluindo que o LÖVE não abria, com base em logs de erro. Ele abria o tempo todo. A captura falhava em silêncio porque o `drmcap.py` não estava no aparelho. Ver [16](16-love-e-gles.md).
 38. **Teste como o mesmo usuário do serviço que funciona.** O EmulationStation roda como `ark`, não como root. Um teste como root pode dar um resultado que não vale para o menu.
 39. **"O EmulationStation funciona" não prova que a biblioteca é boa para outro programa.** O ES liga `libEGL.so` e `libgo2.so` de forma diferente do LÖVE. Compare o que cada um carrega antes de concluir.
-40. **Mudança que não altera o erro é hipótese descartada, não solução.** Registre a tentativa com o resultado do log, para ninguém repetir a mesma coisa. Nesta investigação, o erro de versão ficou idêntico em todas as dez tentativas.
+40. **Mensagem de erro no log não é prova de que o programa falhou.** O SDL testa vários drivers e imprime erro de cada um; se um deles funciona, o programa segue. Confirme pela tela, não pelo log.
+41. **Captura que falha em silêncio é pior que nenhuma.** Um `&&` com um comando inexistente não gera nada e não avisa. Sempre confira que o arquivo de saída existe e tem o tamanho esperado.
 
 ## O que ainda não sabemos
 
@@ -81,8 +82,7 @@ Lista curta, na ordem em que teriam economizado mais tempo.
 
   **Revisado:** o blob nunca faltou. A imagem enxuta já tinha o arquivo certo, de 40.867.064 bytes. A causa do erro `10.6` contra `11.7` continua sem prova. A sequência medida aponta para o blob wayland (em `/usr/lib`), carregado pelo SDL na escolha do driver. Ver [06 — PortMaster](06-portmaster.md) e [16 — LÖVE e GLES](16-love-e-gles.md).
 
-- Por que o LÖVE do PortMaster não abre janela neste ArkOS, mesmo com o runtime instalado. Ver [16](16-love-e-gles.md).
-- Se o ES guarda algum estado de GPU que o LÖVE não tem (o `libgo2.so`, o momento de inicialização do `/dev/mali0`). Não testado.
+- A causa exata da mensagem `user 10.6, kernel 11.7` no log do SDL. Ela não impede o LÖVE de rodar, então deixou de ser urgente. Ver [16](16-love-e-gles.md).
 
 - O comportamento do DraStic no boot: por que o load automático às vezes abre na tela inferior do DS. Ver [13 — Autosave](13-autosave-e-load-automatico.md).
 - Quanto de ganho real o governor `performance` dá em cada jogo. Só sabemos que a frequência para de oscilar.

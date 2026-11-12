@@ -86,8 +86,8 @@ Failed creating base context during opening of kernel driver.
 
 Consequências:
 
-- O splash (feito em LÖVE) não abre. O runtime do LÖVE não consegue criar o contexto GL. Detalhes e tudo que foi tentado em [16 — LÖVE e GLES](16-love-e-gles.md).
-- A GUI do PortMaster cai para renderização em software. Funciona, mas herda o framebuffer anterior — e o menu do EmulationStation aparece **por baixo** da interface, dando a impressão de tela sobreposta.
+- **A mensagem não impede o LÖVE de abrir.** O runtime do LÖVE 11.5 roda e desenha normalmente neste ArkOS. A mensagem sai durante a escolha do driver de vídeo do SDL, e o jogo segue. Detalhes e provas em [16 — LÖVE e GLES](16-love-e-gles.md).
+- O problema visível que sobra é a **sobreposição**: quando o PortMaster ou o LÖVE roda com o EmulationStation vivo, os dois disputam o display e a tela pisca entre um e outro. Isso é resolvido com o EmulationStation parado (veja abaixo).
 
 ### O que está medido
 
@@ -110,7 +110,7 @@ O EmulationStation funciona com os dois mapeados. O erro `user 10.6, kernel 11.7
   ldd /opt/retroarch/bin/retroarch | grep -E "libEGL|libgbm"
   ```
 
-- Para a sobreposição visual, a solução é **não competir pela tela**: rodar o PortMaster com o EmulationStation parado (veja o launcher abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece. O erro de GL continua.
+- Para a sobreposição visual, a solução é **não competir pela tela**: rodar o PortMaster com o EmulationStation parado (veja o launcher abaixo). O fundo passa a ser o console limpo, e a sobreposição desaparece. A mensagem de `/dev/mali0` continua no log, sem efeito.
 
 ## Armadilha 5: instância antiga esquecida
 
@@ -173,4 +173,4 @@ sudo systemctl start emulationstation
 
 No primeiro uso o PortMaster baixa `pylibs.zip` e cria `pylibs/`. Precisa de internet no aparelho — o Wi-Fi aqui dá conta (~200 Mb/s). Se a tela travar no primeiro download, espere: ele está extraindo.
 
-Runtimes de ports específicos (Love, Mono, etc.) são baixados por port, quando necessários. O runtime do LÖVE 11.5 está instalado, mas não abre janela neste ArkOS (ver [16](16-love-e-gles.md)).
+Runtimes de ports específicos (Love, Mono, etc.) são baixados por port, quando necessários. O runtime do LÖVE 11.5 está instalado e roda neste ArkOS (ver [16](16-love-e-gles.md)).

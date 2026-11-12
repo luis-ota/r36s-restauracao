@@ -1,122 +1,67 @@
-# 16 — LÖVE no R36S: por que o jogo não abre
+# 16 — LÖVE no R36S: funciona, com um erro de log que não impede nada
 
-**Status: não resolvido.** O runtime do LÖVE do PortMaster não consegue criar o contexto OpenGL ES neste ArkOS. Este documento registra tudo que foi medido, tudo que foi tentado (inclusive o que não deu certo) e onde a investigação parou. Os arquivos de teste estão em [`experimentos/love-gles/`](../experimentos/love-gles/).
+**Status: o LÖVE 11.5 do PortMaster abre janela e roda neste ArkOS.** Os erros de `/dev/mali0` aparecem no log, mas não impedem o jogo de desenhar.
 
-## Resumo
+Prova (gravação da tela, quadros reais): [quadro inicial](img/love-quadro-inicio.png), [quadro no meio da execução](img/love-quadro-meio.png) e [o vídeo da execução](img/gravacao-love.mp4).
 
-- **Runtime:** `love_11.5` do PortMaster, em `/opt/system/Tools/PortMaster/runtimes/love_11.5/`. Binário `love.aarch64`, bibliotecas em `libs.aarch64/` (`liblove-11.5.so`, `libluajit-5.1.so.2`, `libmodplug.so.1`, `libogg.so.0`). O runtime **não traz SDL nem EGL**: usa as bibliotecas do sistema.
-- **Erro que impede a janela:**
+## Correção desta versão do documento
 
-  ```
-  file /dev/mali0 is not of a compatible version (user 10.6, kernel 11.7)
-  Failed creating base context during opening of kernel driver.
-  Kernel module may not have been loaded
-  ```
+Uma versão anterior deste texto dizia que o LÖVE **não abria janela** e que a causa era o blob Mali. **Isso estava errado.** O erro foi confiar nos logs sem olhar a tela: o `drmcap.py` não estava no aparelho, então as capturas falhavam sem aviso, e eu não tinha nenhuma imagem para checar. Quando a captura foi feita de verdade, o jogo apareceu.
 
-- **Sintoma visual relacionado:** o splash em LÖVE do PortMaster pisca entre a própria interface e o menu do EmulationStation. É a mesma raiz (ver [06, armadilha 4](06-portmaster.md)).
-- **Não é** falta de biblioteca. O loader encontra tudo; o erro acontece depois, na inicialização da GPU.
+Os experimentos com shim de `dlopen`, pré-carga de blobs e driver `kmsdrm` estão descritos abaixo como histórico. Eles foram feitos a partir de uma premissa falsa e não fazem parte da solução.
 
-## O que o aparelho tem (medido)
+## Como rodar que funciona
 
-### Bibliotecas gráficas
+Como o usuário `ark` (o mesmo que roda o EmulationStation), com as bibliotecas do próprio runtime e o SDL do sistema, sem definir driver de vídeo:
 
-Há dois blobs Mali na imagem, e os nomes de `libEGL`, `libGLESv2` e `libgbm` são symlinks para eles:
-
-| Caminho do symlink | Aponta para |
-|---|---|
-| `/usr/local/lib/aarch64-linux-gnu/libEGL.so.1`, `libGLESv2.so.2`, `libgbm.so.1` | `libmali-bifrost-g31-rxp0-gbm.so` (GBM, 40.867.064 bytes) |
-| `/usr/lib/aarch64-linux-gnu/...` e `/lib/aarch64-linux-gnu/...` (mesmos nomes) | `libmali-bifrost-g31-rxp0-wayland-gbm.so` (wayland, 38.921.168 bytes) |
-
-`ldconfig -p` lista `/usr/local` primeiro para `libEGL.so`, `libGLESv2.so` e `libgbm.so`. Assim, quem resolve pelo cache recebe o blob GBM.
-
-### Como o EmulationStation funciona
-
-O EmulationStation é o caso de referência, porque **funciona**:
-
-- Seu binário tem `NEEDED` para `libEGL.so`, `libGLESv1_CM.so`, `libSDL2-2.0.so.0`, `libgo2.so` (a biblioteca de display do próprio ArkOS) e outras.
-- Em `/proc/<pid>/maps`, com o menu aberto, aparecem **os dois blobs** mapeados (wayland primeiro, GBM depois), além de `/dev/mali0` aberto.
-- O `emulationstation.sh` não define nenhuma variável de vídeo, de biblioteca ou de driver. Ele roda o binário direto.
-- O processo roda como usuário **`ark`** (uid 1002), não como root.
-
-### Blobs (análise no PC)
-
-Os dois blobs foram copiados para o PC para análise, porque o `readelf` e o `objdump` do próprio aparelho emitem avisos ("local symbol ... at index >= .dynsym's sh_info") e contagens que não batem. Com `pyelftools` no PC:
-
-- Nenhum dos quatro objetos envolvidos (`love.so`, `sdl2.so`, `gbm.so`, `wayland.so`) lista como indefinido os símbolos `glTextureStorage2DEXT` e `glMultiDrawElementsBaseVertexOES` na tabela dinâmica.
-- Isso não explica o erro `symbol lookup error` que o `LD_DEBUG` mostrou para `libGLESv2.so.2`. A origem desses símbolos não foi encontrada.
-
-## A ordem de carga (medida com `LD_DEBUG=files`)
-
-Rodando o LÖVE como `ark`, com as bibliotecas do runtime e o SDL do sistema, sem definir driver de vídeo:
-
-1. `liblove-11.5.so` pede `libSDL2-2.0.so.0`, que resolve para `/lib/aarch64-linux-gnu/libSDL2-2.0.so.0` (o do sistema).
-2. O SDL, ao escolher o driver de vídeo, **carrega `libwayland-client` e depois `libmali-bifrost-g31-rxp0-wayland-gbm.so` por nome** (dynamically loaded). Esse blob puxa `libdrm` e `libwayland-server`.
-3. Em seguida o SDL carrega `libEGL.so.1` (resolvido para o GBM em `/usr/local`), que abre `libGLESv2.so.2` (também GBM). Aparecem repetidos erros de lookup: `undefined symbol: eglGetPlatformDisplayEXT`.
-4. Logo depois sai o erro `file /dev/mali0 is not of a compatible version (user 10.6, kernel 11.7)`, duas vezes, e o contexto falha.
-
-**O que a sequência prova:** o erro de versão aparece depois que o SDL carrega o blob wayland, e o EGL que chega ao GLES não tem `eglGetPlatformDisplayEXT` no escopo global.
-
-**O que ela não prova:** que o blob wayland é o responsável pela versão `10.6`. Essa ligação continua sendo inferência.
-
-## Tentativas (em ordem)
-
-Todas rodadas com o LÖVE de teste (`main.lua`, em `experimentos/love-gles/`), captura de tela pelo `drmcap` e restauração do EmulationStation no fim.
-
-| # | Mudança | Resultado |
-|---|---|---|
-| 1 | `LD_LIBRARY_PATH` com as libs do runtime, como root | Erro de versão do mali |
-| 2 | Pasta curada `/tmp/lovelibs` sem EGL/GLES/SDL do runtime, com GBM | Erro de versão do mali |
-| 3 | Symlinks de `libEGL`, `libGLESv2`, `libgbm` em todas as versões de SONAME, apontando para o GBM | Erro de versão do mali |
-| 4 | `LD_DEBUG=libs` e `files` | Revelou a ordem de carga acima; sem solução |
-| 5 | `SDL_VIDEODRIVER=kmsdrm` | Erro de versão do mali. **Observação:** a trilha de carga não foi refeita com kmsdrm, então não está confirmado se o blob wayland deixa de ser carregado |
-| 6 | `LD_PRELOAD` com GBM e wayland, `kmsdrm` | Erro de versão do mali |
-| 7 | Shim `dlopen` que troca `RTLD_NOW` por `RTLD_LAZY` (ver código abaixo), como root | Erro de versão do mali |
-| 8 | Shim + `LD_PRELOAD` do GBM, como `ark`, com `kmsdrm` | Erro de versão do mali |
-| 9 | Rodar como `ark` com as libs do runtime e o sistema | Erro de versão do mali |
-| 10 | Patch binário no `SDL_LoadObject` (troca `RTLD_NOW` por `RTLD_LAZY`) | **Não concluído.** O `.text` do SDL foi desmontado, mas o `dlopen` real não foi localizado |
-
-### O shim (tentativa 7)
-
-Compilado no PC com `zig cc -target aarch64-linux-gnu.2.28`, código em [`experimentos/love-gles/dlshim.c`](../experimentos/love-gles/dlshim.c):
-
-```c
-#define _GNU_SOURCE
-#include <dlfcn.h>
-
-void *dlopen(const char *file, int mode) {
-    static void *(*real)(const char *, int);
-    if (!real) real = (void *(*)(const char *, int))dlsym(RTLD_NEXT, "dlopen");
-    return real(file, (mode & ~RTLD_NOW) | RTLD_LAZY);
-}
+```bash
+L=/opt/system/Tools/PortMaster/runtimes/love_11.5
+sudo -u ark env LD_LIBRARY_PATH=$L/libs.aarch64 XDG_RUNTIME_DIR=/run/user/1002 SDL_AUDIODRIVER=alsa \
+  $L/love.aarch64 /mnt/jogos/love-test
 ```
 
-Não resolveu. Como o ES sobrevive com lazy binding e o erro continuou igual, a hipótese de `RTLD_NOW` foi descartada pelo teste, não só pela leitura.
+- `XDG_RUNTIME_DIR` precisa existir e pertencer a `ark` (`/run/user/1002`). Sem isso, o SDL reclama, mas o teste de tela foi feito com ele criado.
+- O teste de tela da pasta `experimentos/love-gles/` sai com SELECT ou START, ou depois de 25 s.
+- O EmulationStation deve estar **parado** enquanto o LÖVE roda. Com o menu na tela, os dois disputam o display (ver [06, armadilha 4](06-portmaster.md)).
 
-## Hipóteses descartadas
+## O erro que aparece no log (e não impede nada)
 
-- **Biblioteca faltando ou caminho errado:** descartado. Com `LD_LIBRARY_PATH` correto, o loader resolve tudo.
-- **`RPATH`/`RUNPATH` escondido no binário do LÖVE:** descartado. `readelf -d` não mostra nenhum.
-- **Usuário root contra `ark`:** descartado. O erro é igual nos dois.
-- **Driver de vídeo wayland por padrão:** a trilha mostra o blob wayland carregado, mas forçar `kmsdrm` não eliminou o erro. Não é a causa isolada.
+```
+file /dev/mali0 is not of a compatible version (user 10.6, kernel 11.7)
+Failed creating base context during opening of kernel driver.
+```
 
-## Hipóteses em aberto
+Pela trilha de carga (`LD_DEBUG=files`), o SDL, ao escolher o driver de vídeo, carrega primeiro o blob de **wayland** (`libmali-bifrost-g31-rxp0-wayland-gbm.so`). É ele que imprime essa mensagem. Depois disso o SDL segue e o LÖVE renderiza normalmente.
 
-- **O `libgo2.so` do ES.** O ES faz o display por essa biblioteca, e o LÖVE não passa por ela. Não foi testado se o ES inicializa o `/dev/mali0` antes do GL, o que faria diferença na negociação de versão.
-- **A versão negociada pelo ES.** Um rastreio de `ioctl` do ES e do LÖVE, comparando a versão enviada ao `/dev/mali0`, mostraria se o problema é a versão ou só a ordem de carga. Não foi feito: o aparelho não tem `strace`.
-- **O blob wayland como causa da versão `10.6`.** Só confirmável com o rastreio acima.
+**Não está provado** que o blob wayland seja a causa da versão `10.6`. O que está medido é a sequência: a mensagem sai quando esse blob é carregado, e o jogo continua. Ninguém precisa consertar isso para o LÖVE funcionar.
 
-## Próximo passo, se alguém for continuar
+## Medido na gravação
 
-1. Instalar ou compilar um `strace` para o aparelho (ou cruzar com o PC via `uv run --with`) e capturar o `ioctl` de versão do `/dev/mali0` nos dois casos.
-2. Rodar o ES com `LD_DEBUG=files` (exige parar o menu e relançar; só sem jogo aberto) e comparar a ordem de carga com a do LÖVE.
-3. Se nada disso fechar, tratar o LÖVE como **não suportado** neste ArkOS e usar outra estratégia para os ports que dependem dele.
+- Quadro 02: `t = 0.2`, `fps: 4` (início, o SDL ainda está inicializando).
+- Quadro 20: `t = 12.2`, `fps: 77`, quadrado vermelho se movendo.
+- O quadrado vermelho que você viu na tela era **este teste**, rodando, e não um erro visual.
+- Os 40 quadros cobrem cerca de 35 s. A execução termina pelo `love.event.quit` do teste (25 s), e o aparelho volta para a tela preta antes do EmulationStation subir de novo.
 
-## Como reproduzir o teste
+Não foi testado ainda: o botão SELECT/START de saída pelo controle (o `joystickpressed` do teste), o áudio pelo ALSA durante o jogo e um jogo de PortMaster de verdade.
 
-Requer acesso SSH ao aparelho sem senha (chave), `drmcap.py` em `/tmp` no aparelho e o `main.lua` em `/mnt/jogos/love-test/`. O script [`experimentos/love-gles/teste-love.sh`](../experimentos/love-gles/teste-love.sh) faz o ciclo completo: confere se não há jogo aberto, para o EmulationStation, roda o LÖVE, captura a tela e restaura o menu.
+## Histórico (tentativas da versão anterior)
 
-Nunca pare o EmulationStation com jogo aberto. O script confere antes.
+Essas tentativas foram avaliadas só pelo log de erro. Como o resultado real era outro, nenhuma delas tem valor como solução, mas ficam registradas para não serem repetidas por engano:
 
-## Ponte com o bug visual
+| Tentativa | Observação |
+|---|---|
+| `LD_LIBRARY_PATH` com as libs do runtime, como root | Log com erro de versão, mas o jogo rodava |
+| Pasta curada `/tmp/lovelibs` sem EGL/GLES/SDL do runtime | Idem |
+| Symlinks de EGL/GLES/gbm apontando para o GBM | Idem |
+| `SDL_VIDEODRIVER=kmsdrm` | Idem |
+| `LD_PRELOAD` com GBM e wayland | Idem |
+| Shim `dlopen` (`RTLD_NOW` → `RTLD_LAZY`), código em [`experimentos/love-gles/dlshim.c`](../experimentos/love-gles/dlshim.c) | Idem |
+| Como `ark`, com `LD_PRELOAD` do GBM | Idem |
 
-O splash do PortMaster em LÖVE pisca com o menu porque os dois disputam o display. A solução adotada para os ports é a mesma do [doc 06](06-portmaster.md): rodar com o EmulationStation parado. Isso resolve a sobreposição, mas **não resolve** o erro de GL, então o splash continua sem janela.
+## Ponte com o bug visual do PortMaster
+
+O splash do PortMaster também roda em LÖVE e pisca junto com o menu do EmulationStation, porque os dois disputam o display. A solução é a mesma do [doc 06](06-portmaster.md): rodar com o EmulationStation parado. Esse ponto **não foi retestado** com o LÖVE correto nesta versão do documento.
+
+## Reproduzir a gravação
+
+O script [`experimentos/love-gles/teste-love.sh`](../experimentos/love-gles/teste-love.sh) para o EmulationStation, roda o teste, grava os quadros com `drmcap` e devolve o menu. Ele exige que o `drmcap.py` esteja em `/tmp` do aparelho, que o `main.lua` esteja em `/mnt/jogos/love-test/`, e que nenhum jogo esteja aberto. Confira que o arquivo de captura foi criado: uma captura que falha sem aviso foi justamente o que nos enganou aqui.
