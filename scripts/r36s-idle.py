@@ -31,6 +31,9 @@ DIM_PERCENT = float(os.environ.get("DIM_PERCENT", "45"))
 SLIDE_PERCENT = float(os.environ.get("SLIDE_PERCENT", str(DIM_PERCENT)))
 SLIDE_SECONDS_EACH = float(os.environ.get("SLIDE_SECONDS_EACH", "8"))
 MAX_SLIDE_MIN = float(os.environ.get("MAX_SLIDE_MIN", "30"))
+# Ao fim do slideshow (MAX_SLIDE_MIN) sem ninguem: descanso profundo, menu fora e brilho minimo.
+# Sem isso o aparelho passa o dia alternando slideshow e menu, gastando CPU e calor.
+RESTING_PERCENT = float(os.environ.get("RESTING_PERCENT", "1"))
 
 
 def read_int(path):
@@ -269,13 +272,15 @@ if not fds:
 
 dimmed = False
 shown = False
+descanso = False
 last = time.monotonic()
 last_scan = last
 
 
 def tocar():
-    global last, dimmed, shown
+    global last, dimmed, shown, descanso
     last = time.monotonic()
+    descanso = False
     if shown or dimmed:
         log(f"toque: shown={shown} dimmed={dimmed} normal={normal}")
     if shown:
@@ -285,6 +290,8 @@ def tocar():
     if dimmed:
         write_bright(normal)
         dimmed = False
+    if not es_ativo() and not jogo_rodando() and not app_de_console():
+        subir_es()
 
 
 while True:
@@ -312,7 +319,7 @@ while True:
             if not dimmed and parado >= DIM_SECONDS:
                 write_bright(baixo)
                 dimmed = True
-            if (not shown and parado >= SLIDE_SECONDS and not jogo_rodando()
+            if (not descanso and not shown and parado >= SLIDE_SECONDS and not jogo_rodando()
                     and not app_de_console() and not app_pelo_menu()):
                 parar_es()
                 dimmed = True
@@ -320,8 +327,15 @@ while True:
                 write_bright(baixo_slide)
                 if not slideshow(baixo_slide):
                     shown = False
-                    subir_es()
-                    last = time.monotonic()  # nao para o menu de novo enquanto ele sobe
+                    if jogo_rodando():
+                        # um jogo comecou durante o slideshow: nao mexe em nada
+                        pass
+                    else:
+                        # ninguem mexeu em 30 min de slideshow: para de ciclar e
+                        # entra no descanso profundo (menu fora, brilho minimo)
+                        write_bright(int(maxb * RESTING_PERCENT / 100))
+                        descanso = True
+                        log("descanso profundo: menu fora, aguardando toque")
                 else:
                     tocar()
 
