@@ -33,7 +33,8 @@ NORMAL_FILE = os.environ.get("NORMAL_FILE", "/etc/r36s-idle.normal")
 VOLUME_NORMAL_FILE = os.environ.get("VOLUME_NORMAL_FILE", "/etc/r36s-idle.volume")
 LOG_FILE = os.environ.get("LOG_FILE", "/var/log/r36s-idle.log")
 IMAGES = "/home/ark/.emulationstation/slideshow/images"
-GAMES = ("drastic", "retroarch", "mupen64plus", "love", "ppsspp")
+# nomes de /proc/<pid>/comm (o runtime do PortMaster roda como "love.aarch64")
+GAMES = ("drastic", "retroarch", "mupen64plus", "love", "love.aarch64", "ppsspp")
 
 MUSIC_RAW = os.environ.get("MUSIC_RAW", "/home/ark/.r36s-idle/musica/lain_menu_chill.raw")
 MUSIC_FLOOR = float(os.environ.get("MUSIC_FLOOR", "0.20"))
