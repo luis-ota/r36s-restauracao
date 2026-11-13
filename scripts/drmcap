@@ -1,0 +1,14 @@
+#!/bin/bash
+# Captura a tela pelo DRM e falha alto se nao gravar nada.
+# Uso: sudo drmcap [arquivo.raw]   (padrao: /tmp/shot.raw, BGRA 640x480)
+# Requer /usr/local/bin/drmcap.py (scripts/drmcap.py do repositorio).
+SAIDA="${1:-/tmp/shot.raw}"
+/usr/bin/python3 /usr/local/bin/drmcap.py >/dev/null 2>/tmp/drmcap.err || {
+  echo "drmcap: falhou: $(head -n 1 /tmp/drmcap.err)" >&2
+  exit 1
+}
+[ -s /tmp/shot.raw ] || { echo "drmcap: nao gerou /tmp/shot.raw" >&2; exit 1; }
+SZ=$(stat -c %s /tmp/shot.raw)
+[ "$SZ" = "1228800" ] || { echo "drmcap: tamanho inesperado: $SZ" >&2; exit 1; }
+mv /tmp/shot.raw "$SAIDA"
+echo "drmcap: ok $SAIDA ($SZ bytes)"

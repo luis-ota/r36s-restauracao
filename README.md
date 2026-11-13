@@ -39,7 +39,7 @@ Dois textos em inglês contam a história por fora da documentação:
 
 Em [`scripts/`](scripts/):
 
-- `drmcap.py` — captura a tela pelo framebuffer do DRM (funciona sem X11).
+- `drmcap.py` + `drmcap` — captura a tela pelo framebuffer do DRM (funciona sem X11). O wrapper confere o tamanho e falha alto se não gravar. Instale em `/usr/local/bin` ([08](docs/08-captura-de-tela.md)).
 - `btop-console.sh` — abre o btop no console e fecha com START/SELECT/L+R.
 - `btop-launcher.sh` — atalho do menu Ports para o btop.
 - `portmaster-console.sh` — roda o PortMaster com o EmulationStation parado.

@@ -1,8 +1,8 @@
 #!/bin/bash
 # Teste do LÖVE no aparelho: roda main.lua, captura a tela e devolve o menu.
 # Uso no PC: ./teste-love.sh
-# Pré-requisitos: ssh sem senha para o host "r36s", drmcap.py em /tmp do aparelho,
-# main.lua em /mnt/jogos/love-test/ do aparelho.
+# Pré-requisitos: ssh sem senha para o host "r36s", drmcap instalado no aparelho
+# (/usr/local/bin/drmcap, ver doc 08), main.lua em /mnt/jogos/love-test/.
 # Nunca para o EmulationStation com jogo aberto: o script confere antes.
 
 set -u
@@ -18,7 +18,7 @@ sudo systemctl stop emulationstation 2>/dev/null; sleep 2
 sudo -u ark env LD_LIBRARY_PATH=$L/libs.aarch64 XDG_RUNTIME_DIR=/run/user/1002 SDL_AUDIODRIVER=alsa \
   timeout 30 $L/love.aarch64 /mnt/jogos/love-test >/tmp/love.log 2>&1 &
 sleep 9
-sudo python3 /tmp/drmcap.py >/dev/null 2>&1 && sudo cp /tmp/shot.raw /tmp/love.raw && sudo chmod 644 /tmp/love.raw
+sudo drmcap /tmp/love.raw && sudo chmod 644 /tmp/love.raw
 wait
 echo "=== log do LÖVE ==="; tail -n 6 /tmp/love.log
 sudo systemctl start emulationstation; sleep 6

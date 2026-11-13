@@ -22,12 +22,28 @@ A receita:
 
 Tudo com `ctypes`, sem instalar nada. Script completo: [`scripts/drmcap.py`](../scripts/drmcap.py).
 
+### Instale de forma permanente (não em `/tmp`)
+
+`/tmp` some no reboot, e uma captura que falha em silêncio já nos fez concluir
+coisa errada (ver [16](16-love-e-gles.md)). Instale os dois arquivos no rootfs:
+
 ```bash
-sudo python3 drmcap.py
-# grava /tmp/shot.raw e /tmp/shot.txt com "largura altura pitch bpp"
+sudo install -m 755 scripts/drmcap.py /usr/local/bin/drmcap.py
+sudo install -m 755 scripts/drmcap /usr/local/bin/drmcap
+```
+
+O `/usr/local/bin/drmcap` roda o `.py`, confere que o arquivo saiu com
+1.228.800 bytes (640×480×4) e só então move para o destino. Se a captura
+falhar, ele sai com erro e uma mensagem — não deixa ninguém achando que gravou.
+
+```bash
+sudo drmcap /tmp/shot.raw
+# drmcap: ok /tmp/shot.raw (1228800 bytes)
 
 ffmpeg -y -v error -f rawvideo -pix_fmt bgra -s 640x480 -i shot.raw shot.png
 ```
+
+O `/tmp/shot.txt` (largura, altura, pitch e bpp) continua sendo gerado.
 
 ### Detalhes que dão erro
 
