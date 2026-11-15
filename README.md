@@ -28,6 +28,7 @@ Tudo aqui foi testado no aparelho. O que não foi medido está marcado como **n�
 | [16 — LÖVE e GLES](docs/16-love-e-gles.md) | O LÖVE 11.5 do PortMaster roda neste ArkOS, com prova em gravação; o erro de `/dev/mali0` no log não impede nada |
 | [17 — Música de fundo do menu](docs/17-musica-de-fundo-do-menu.md) | A faixa chill do menu: como foi gerada, onde fica, como trocar ou remover |
 | [18 — N64: Ocarina of Time](docs/18-n64-no-r36s.md) | Como medir, o que ficou em ~100% de velocidade, os ajustes e o bug do launcher |
+| [19 — Tailscale](docs/19-tailscale-no-r36s.md) | Acesso ao aparelho de qualquer rede, sem abrir porta no roteador |
 
 ## Posts no blog
 
