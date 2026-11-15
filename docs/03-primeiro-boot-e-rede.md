@@ -93,3 +93,54 @@ sudo journalctl -u emulationstation -n 40 --no-pager
 Atenção: hoje o `systemd-journald` deste aparelho está mascarado, então o `journalctl` só mostra registros antigos. Confira com `systemctl is-enabled systemd-journald`. Se estiver `masked`, pare o serviço e rode `/usr/bin/emulationstation/emulationstation` pelo SSH para ver o erro.
 
 Foi assim que descobrimos o problema de SDL2 documentado em [07](07-emulationstation-e-sdl.md).
+
+## Rede pelo celular sem o dongle de Wi-Fi
+
+Há dois jeitos de dar internet ao aparelho fora de casa, e eles são bem diferentes.
+
+### 1. Hotspot do celular (o simples)
+
+O R36S entra no **hotspot** do celular como cliente Wi-Fi, igual a qualquer rede:
+
+```bash
+nmcli device wifi list
+nmcli device wifi connect "HOTSPOT" password "SENHA"
+```
+
+Detalhes que fazem diferença: o hotspot precisa estar em **2.4 GHz** (o Wi-Fi deste aparelho não vê 5 GHz) e em **WPA2** (WPA3 puro costuma falhar).
+
+### 2. Celular no cabo (USB tethering)
+
+A porta USB-C do R36S é compartilhada: normalmente ela roda em modo **gadget** (o PC vê o aparelho em `192.168.7.2`). Mas a mesma porta roda em modo **host** — é assim que o dongle de Wi-Fi funciona nela. Então, **sem o dongle**, dá para colocar o celular no cabo e usar o tethering dele.
+
+Requisitos:
+
+- Adaptador **OTG** (USB-C macho → USB-A fêmea) e o cabo do celular.
+- Celular **Android** com "Tethering USB" ligado. **iPhone não funciona**: o kernel 4.4 deste aparelho não tem o módulo `ipheth`.
+- O dongle de Wi-Fi tem que estar fora — a porta é uma só.
+
+O script [`scripts/r36s-tether.sh`](../scripts/r36s-tether.sh) faz a troca:
+
+```bash
+sudo r36s-tether.sh        # tira o modo gadget, carrega rndis_host e pega DHCP
+sudo r36s-tether.sh --off  # volta ao modo gadget (o PC vê o R36S de novo)
+```
+
+O que ele faz, em ordem:
+
+1. para o `r36s-usbnet` e descarrega o `g_ether` (libera a porta);
+2. carrega `usbnet`, `rndis_host` e `cdc_ether`;
+3. espera aparecer `usb0`/`eth1` (a interface do celular);
+4. `ip link set up` + `dhclient`;
+5. testa `ping 1.1.1.1` e avisa se não houver internet.
+
+Se nenhuma interface aparecer, ele **restaura o modo gadget** e sai com erro, em vez de deixar o aparelho sem rede nenhuma. Testado esse caminho no aparelho.
+
+Limites medidos/sabidos:
+
+- O kernel tem `rndis_host`, `cdc_ether` e `usbnet`, e o `dhclient` existe: a parte de software está pronta.
+- **Não foi testado com um celular de verdade** — falta o aparelho na mão e o adaptador OTG.
+- O R36S precisa alimentar o celular pela porta. Celular que se recusa a carregar por OTG pode não liberar o tethering.
+- Enquanto o tethering está ligado, o cabo não serve para acessar o R36S pelo PC (a porta está em modo host).
+
+Com o Tailscale ([19](19-tailscale-no-r36s.md)), qualquer um dos dois caminhos deixa o aparelho alcançável pelo mesmo IP da tailnet.

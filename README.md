@@ -53,6 +53,7 @@ Em [`scripts/`](scripts/):
 - `backup_pokemon.sh` — backup versionado dos saves, com espelho no slot 9.
 - `restaurar-save.sh` — atalho do menu Ports para restaurar uma versão antiga.
 - `r36s-usbnet.sh` — rede por USB (gadget Ethernet).
+- `r36s-tether.sh` — internet pelo celular Android na porta OTG, sem o dongle de Wi-Fi.
 - `r36s-idle.py` — escurece a luz de fundo por inatividade, faz slideshow com música de fundo em volume baixo e, depois de 30 min, entra em descanso profundo (menu fora, brilho e música desligados). Ver [12](docs/12-descanso-e-bateria.md).
 
 ## Experimentos
